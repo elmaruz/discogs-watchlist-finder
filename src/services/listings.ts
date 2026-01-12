@@ -1,8 +1,8 @@
 import axios from 'axios';
-import * as v from 'valibot';
 import { DiscogsShopApiResponseSchema } from '../types/discogs.js';
 import { handleApiError } from '../utils/errorHandler.js';
 import { insertSeller, insertListing } from '../db/queries/index.js';
+import { validate } from '../utils/validation.js';
 
 export async function fetchListingsForRelease(
   releaseId: number
@@ -18,15 +18,11 @@ export async function fetchListingsForRelease(
       }
     );
 
-    const result = v.safeParse(DiscogsShopApiResponseSchema, res.data);
-
-    if (!result.success) {
-      console.error(`❌ Validation Error: Listings for release ${releaseId}`);
-      console.error('Parse errors:', v.flatten(result.issues));
-      throw new Error(`Failed to parse shop API response`);
-    }
-
-    const data = result.output;
+    const data = validate(
+      DiscogsShopApiResponseSchema,
+      res.data,
+      `Listings for release ${releaseId}`
+    );
 
     for (const listing of data.items) {
       insertSeller.run(

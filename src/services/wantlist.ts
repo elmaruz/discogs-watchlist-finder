@@ -1,8 +1,8 @@
-import * as v from 'valibot';
 import { discogs } from '../clients/index.js';
 import { DiscogsWantlistResponseSchema } from '../types/discogs.js';
 import { handleApiError } from '../utils/errorHandler.js';
 import { insertWantlistItem } from '../db/queries/index.js';
+import { validate } from '../utils/validation.js';
 
 export async function fetchWantlist(
   username: string,
@@ -17,20 +17,14 @@ export async function fetchWantlist(
         params: { page, per_page: 100 },
       });
 
-      const result = v.safeParse(DiscogsWantlistResponseSchema, res.data);
+      const wantlist = validate(
+        DiscogsWantlistResponseSchema,
+        res.data,
+        `Wantlist for ${username}, page ${page}`
+      );
+      pages = wantlist.pagination.pages;
 
-      if (!result.success) {
-        console.error(
-          `❌ Validation Error: Wantlist for ${username}, page ${page}`
-        );
-        console.error('Parse errors:', v.flatten(result.issues));
-        throw new Error(`Failed to parse wantlist`);
-      }
-
-      const data = result.output;
-      pages = data.pagination.pages;
-
-      for (const want of data.wants) {
+      for (const want of wantlist.wants) {
         const release = want.basic_information;
         insertWantlistItem.run(
           release.id,
