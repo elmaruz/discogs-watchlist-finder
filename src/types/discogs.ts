@@ -14,6 +14,11 @@ export interface DiscogsLabel {
   catno: string;
 }
 
+export interface DiscogsGenre {
+  genreId: number;
+  name: string;
+}
+
 export interface DiscogsReleaseBasic {
   id: number;
   title: string;
@@ -31,32 +36,38 @@ export interface DiscogsWantlistResponse {
   wants: DiscogsWant[];
 }
 
-export interface DiscogsSellerStats {
-  rating: number;
-  total: number;
+export interface DiscogsListing {
+  itemId: number;
+  price: {
+    amount: number;
+    currencyCode: string;
+  };
+  seller: {
+    uid: number;
+    name: string;
+    rating?: number;
+    ratingCount?: number;
+    shipsFrom?: string;
+  };
+  mediaCondition?: string;
+  sleeveCondition?: string;
+  shipsFrom?: string;
+  listedDate: string;
+  release: {
+    genres: DiscogsGenre[];
+  };
 }
 
-export interface DiscogsSeller {
+export interface DiscogsShopApiResponse {
+  items: DiscogsListing[];
+}
+
+export interface DiscogsUserProfile {
   id: number;
   username: string;
-  stats?: DiscogsSellerStats;
-}
-
-export interface DiscogsPrice {
-  value: number;
-  currency: string;
-}
-
-export interface DiscogsListing {
-  id: number;
-  seller: DiscogsSeller;
-  price?: DiscogsPrice;
-  condition?: string;
-  sleeve_condition?: string;
-  ships_from?: string;
-}
-
-export interface DiscogsMarketplaceResponse {
-  pagination: DiscogsPagination;
-  results: DiscogsListing[];
+  name?: string;
+  profile?: string;
+  registered?: string;
+  num_wantlist?: number;
+  num_collection?: number;
 }

@@ -1,0 +1,43 @@
+CREATE TABLE users (
+    user_id INTEGER PRIMARY KEY,
+    username TEXT UNIQUE NOT NULL,
+    name TEXT,
+    profile TEXT,
+    registered TEXT,
+    num_wantlist INTEGER,
+    num_collection INTEGER
+);
+
+CREATE TABLE wantlist (
+    release_id INTEGER PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    artist TEXT,
+    title TEXT,
+    label TEXT,
+    catno TEXT,
+    year INTEGER,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE sellers (
+    seller_id INTEGER PRIMARY KEY,
+    username TEXT,
+    rating REAL,
+    num_ratings INTEGER,
+    ships_from TEXT
+);
+
+CREATE TABLE listings (
+    listing_id INTEGER PRIMARY KEY,
+    release_id INTEGER,
+    seller_id INTEGER,
+    price REAL,
+    currency TEXT,
+    condition TEXT,
+    sleeve_condition TEXT,
+    genres TEXT[]
+);
+
+-- Helpful indexes for query performance
+CREATE INDEX idx_listings_seller ON listings(seller_id);
+CREATE INDEX idx_listings_release ON listings(release_id);
