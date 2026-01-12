@@ -1,4 +1,4 @@
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     user_id INTEGER PRIMARY KEY,
     username TEXT UNIQUE NOT NULL,
     name TEXT,
@@ -8,7 +8,7 @@ CREATE TABLE users (
     num_collection INTEGER
 );
 
-CREATE TABLE wantlist (
+CREATE TABLE IF NOT EXISTS wantlist (
     release_id INTEGER PRIMARY KEY,
     user_id INTEGER NOT NULL,
     artist TEXT,
@@ -19,7 +19,7 @@ CREATE TABLE wantlist (
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
-CREATE TABLE sellers (
+CREATE TABLE IF NOT EXISTS sellers (
     seller_id INTEGER PRIMARY KEY,
     username TEXT,
     rating REAL,
@@ -27,7 +27,7 @@ CREATE TABLE sellers (
     ships_from TEXT
 );
 
-CREATE TABLE listings (
+CREATE TABLE IF NOT EXISTS listings (
     listing_id INTEGER PRIMARY KEY,
     release_id INTEGER,
     seller_id INTEGER,
@@ -39,5 +39,5 @@ CREATE TABLE listings (
 );
 
 -- Helpful indexes for query performance
-CREATE INDEX idx_listings_seller ON listings(seller_id);
-CREATE INDEX idx_listings_release ON listings(release_id);
+CREATE INDEX IF NOT EXISTS idx_listings_seller ON listings(seller_id);
+CREATE INDEX IF NOT EXISTS idx_listings_release ON listings(release_id);

@@ -1,11 +1,12 @@
 import 'dotenv/config';
-import { initSchema } from './db.js';
+import { initSchema, clearSnapshot } from './db.js';
 import { fetchAndStoreUser } from './services/user.js';
 import { fetchWantlist } from './services/wantlist.js';
 import { fetchListingsForRelease } from './services/listings.js';
 import { getAllReleases, initQueries } from './db/queries/index.js';
 
 initSchema();
+clearSnapshot();
 initQueries();
 
 const username = process.env.DISCOGS_USERNAME!;
