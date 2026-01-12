@@ -28,9 +28,9 @@ export async function fetchListingsForRelease(
       insertSeller.run(
         listing.seller.uid,
         listing.seller.name,
-        listing.seller.rating ?? null,
-        listing.seller.ratingCount ?? null,
-        listing.seller.shipsFrom ?? null
+        listing.seller.rating,
+        listing.seller.ratingCount,
+        listing.seller.shipsFrom
       );
 
       insertListing.run(
@@ -39,8 +39,8 @@ export async function fetchListingsForRelease(
         listing.seller.uid,
         listing.price.amount,
         listing.price.currencyCode,
-        listing.mediaCondition ?? null,
-        listing.sleeveCondition ?? null,
+        listing.mediaCondition,
+        listing.sleeveCondition,
         JSON.stringify(listing.release.genres.map((genre) => genre.name))
       );
     }

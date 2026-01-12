@@ -29,11 +29,11 @@ export async function fetchWantlist(
         insertWantlistItem.run(
           release.id,
           userId,
-          release.artists?.[0]?.name ?? null,
+          release.artists?.[0]?.name || null,
           release.title,
-          release.labels?.[0]?.name ?? null,
-          release.labels?.[0]?.catno ?? null,
-          release.year ?? null
+          release.labels?.[0]?.name || null,
+          release.labels?.[0]?.catno || null,
+          release.year
         );
       }
 

@@ -17,11 +17,11 @@ export async function fetchAndStoreUser(username: string): Promise<number> {
     insertUser.run(
       user.id,
       user.username,
-      user.name ?? null,
-      user.profile ?? null,
-      user.registered ?? null,
-      user.num_wantlist ?? null,
-      user.num_collection ?? null
+      user.name,
+      user.profile,
+      user.registered,
+      user.num_wantlist,
+      user.num_collection
     );
 
     console.log(`✔ User ${username} (ID: ${user.id}) stored`);
