@@ -1,15 +1,22 @@
+import * as v from 'valibot';
 import { discogs } from '../clients/index.js';
-import type { DiscogsUserProfile } from '../types/discogs.js';
+import { DiscogsUserProfileSchema } from '../types/discogs.js';
 import { handleApiError } from '../utils/errorHandler.js';
 import { insertUser } from '../db/queries/index.js';
 
 export async function fetchAndStoreUser(username: string): Promise<number> {
   try {
-    const res = await discogs.get<DiscogsUserProfile>(
-      `/users/${username}`
-    );
+    const res = await discogs.get(`/users/${username}`);
 
-    const user = res.data;
+    const result = v.safeParse(DiscogsUserProfileSchema, res.data);
+
+    if (!result.success) {
+      console.error(`❌ Validation Error: User profile for "${username}"`);
+      console.error('Parse errors:', v.flatten(result.issues));
+      throw new Error(`Failed to parse user profile`);
+    }
+
+    const user = result.output;
 
     insertUser.run(
       user.id,
@@ -23,7 +30,7 @@ export async function fetchAndStoreUser(username: string): Promise<number> {
 
     console.log(`✔ User ${username} (ID: ${user.id}) stored`);
     return user.id;
-  } catch (error: unknown) {
+  } catch (error) {
     handleApiError(error, `Fetching user profile for "${username}"`, {
       throwOnNon404: true,
     });

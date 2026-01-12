@@ -1,73 +1,89 @@
-export interface DiscogsPagination {
-  page: number;
-  pages: number;
-  per_page: number;
-  items: number;
-}
+import * as v from 'valibot'
 
-export interface DiscogsArtist {
-  name: string;
-}
+// Leaf schemas
+export const DiscogsPaginationSchema = v.object({
+  page: v.number(),
+  pages: v.number(),
+  per_page: v.number(),
+  items: v.number(),
+})
 
-export interface DiscogsLabel {
-  name: string;
-  catno: string;
-}
+export const DiscogsArtistSchema = v.object({
+  name: v.string(),
+})
 
-export interface DiscogsGenre {
-  genreId: number;
-  name: string;
-}
+export const DiscogsLabelSchema = v.object({
+  name: v.string(),
+  catno: v.string(),
+})
 
-export interface DiscogsReleaseBasic {
-  id: number;
-  title: string;
-  year?: number;
-  artists?: DiscogsArtist[];
-  labels?: DiscogsLabel[];
-}
+export const DiscogsGenreSchema = v.object({
+  genreId: v.number(),
+  name: v.string(),
+})
 
-export interface DiscogsWant {
-  basic_information: DiscogsReleaseBasic;
-}
+// Composite schemas
+export const DiscogsReleaseBasicSchema = v.object({
+  id: v.number(),
+  title: v.string(),
+  year: v.optional(v.number()),
+  artists: v.optional(v.array(DiscogsArtistSchema)),
+  labels: v.optional(v.array(DiscogsLabelSchema)),
+})
 
-export interface DiscogsWantlistResponse {
-  pagination: DiscogsPagination;
-  wants: DiscogsWant[];
-}
+export const DiscogsWantSchema = v.object({
+  basic_information: DiscogsReleaseBasicSchema,
+})
 
-export interface DiscogsListing {
-  itemId: number;
-  price: {
-    amount: number;
-    currencyCode: string;
-  };
-  seller: {
-    uid: number;
-    name: string;
-    rating?: number;
-    ratingCount?: number;
-    shipsFrom?: string;
-  };
-  mediaCondition?: string;
-  sleeveCondition?: string;
-  shipsFrom?: string;
-  listedDate: string;
-  release: {
-    genres: DiscogsGenre[];
-  };
-}
+export const DiscogsWantlistResponseSchema = v.object({
+  pagination: DiscogsPaginationSchema,
+  wants: v.array(DiscogsWantSchema),
+})
 
-export interface DiscogsShopApiResponse {
-  items: DiscogsListing[];
-}
+export const DiscogsListingSchema = v.object({
+  itemId: v.number(),
+  price: v.object({
+    amount: v.number(),
+    currencyCode: v.string(),
+  }),
+  seller: v.object({
+    uid: v.number(),
+    name: v.string(),
+    rating: v.optional(v.number()),
+    ratingCount: v.optional(v.number()),
+    shipsFrom: v.optional(v.string()),
+  }),
+  mediaCondition: v.optional(v.string()),
+  sleeveCondition: v.optional(v.string()),
+  shipsFrom: v.optional(v.string()),
+  listedDate: v.string(),
+  release: v.object({
+    genres: v.array(DiscogsGenreSchema),
+  }),
+})
 
-export interface DiscogsUserProfile {
-  id: number;
-  username: string;
-  name?: string;
-  profile?: string;
-  registered?: string;
-  num_wantlist?: number;
-  num_collection?: number;
-}
+export const DiscogsShopApiResponseSchema = v.object({
+  items: v.array(DiscogsListingSchema),
+})
+
+export const DiscogsUserProfileSchema = v.object({
+  id: v.number(),
+  username: v.string(),
+  name: v.optional(v.string()),
+  profile: v.optional(v.string()),
+  registered: v.optional(v.string()),
+  num_wantlist: v.optional(v.number()),
+  num_collection: v.optional(v.number()),
+})
+
+// Export inferred types
+export type DiscogsPagination = v.InferOutput<typeof DiscogsPaginationSchema>
+export type DiscogsArtist = v.InferOutput<typeof DiscogsArtistSchema>
+export type DiscogsLabel = v.InferOutput<typeof DiscogsLabelSchema>
+export type DiscogsGenre = v.InferOutput<typeof DiscogsGenreSchema>
+export type DiscogsReleaseBasic = v.InferOutput<typeof DiscogsReleaseBasicSchema>
+export type DiscogsWant = v.InferOutput<typeof DiscogsWantSchema>
+export type DiscogsWantlistResponse = v.InferOutput<typeof DiscogsWantlistResponseSchema>
+export type DiscogsListing = v.InferOutput<typeof DiscogsListingSchema>
+export type DiscogsShopApiResponse = v.InferOutput<typeof DiscogsShopApiResponseSchema>
+export type DiscogsUserProfile = v.InferOutput<typeof DiscogsUserProfileSchema>

@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { DiscogsShopApiResponse } from '../types/discogs.js';
+import * as v from 'valibot';
+import { DiscogsShopApiResponseSchema } from '../types/discogs.js';
 import { handleApiError } from '../utils/errorHandler.js';
 import { insertSeller, insertListing } from '../db/queries/index.js';
 
@@ -7,7 +8,7 @@ export async function fetchListingsForRelease(
   releaseId: number
 ): Promise<void> {
   try {
-    const res = await axios.get<DiscogsShopApiResponse>(
+    const res = await axios.get(
       `https://www.discogs.com/api/shop-page-api/sell_item`,
       {
         params: { release: releaseId },
@@ -17,31 +18,39 @@ export async function fetchListingsForRelease(
       }
     );
 
-    for (const l of res.data.items) {
+    const result = v.safeParse(DiscogsShopApiResponseSchema, res.data);
+
+    if (!result.success) {
+      console.error(`❌ Validation Error: Listings for release ${releaseId}`);
+      console.error('Parse errors:', v.flatten(result.issues));
+      throw new Error(`Failed to parse shop API response`);
+    }
+
+    const data = result.output;
+
+    for (const listing of data.items) {
       insertSeller.run(
-        l.seller.uid,
-        l.seller.name,
-        l.seller.rating ?? null,
-        l.seller.ratingCount ?? null,
-        l.seller.shipsFrom ?? null
+        listing.seller.uid,
+        listing.seller.name,
+        listing.seller.rating ?? null,
+        listing.seller.ratingCount ?? null,
+        listing.seller.shipsFrom ?? null
       );
 
       insertListing.run(
-        l.itemId,
+        listing.itemId,
         releaseId,
-        l.seller.uid,
-        l.price.amount,
-        l.price.currencyCode,
-        l.mediaCondition ?? null,
-        l.sleeveCondition ?? null,
-        l.release.genres
-          ? JSON.stringify(l.release.genres.map((genre) => genre.name))
-          : null
+        listing.seller.uid,
+        listing.price.amount,
+        listing.price.currencyCode,
+        listing.mediaCondition ?? null,
+        listing.sleeveCondition ?? null,
+        JSON.stringify(listing.release.genres.map((genre) => genre.name))
       );
     }
 
-    console.log(`✔ Release ${releaseId} - ${res.data.items.length} listings`);
-  } catch (error: unknown) {
+    console.log(`✔ Release ${releaseId} - ${data.items.length} listings`);
+  } catch (error) {
     handleApiError(error, `Fetching listings for release ${releaseId}`);
     return;
   }
