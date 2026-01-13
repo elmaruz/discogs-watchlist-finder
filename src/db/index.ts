@@ -11,7 +11,7 @@ db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 
 export function initSchema(): void {
-  const schema = fs.readFileSync('src/schema.sql', 'utf8');
+  const schema = fs.readFileSync('src/db/schema.sql', 'utf8');
   db.exec(schema);
 }
 

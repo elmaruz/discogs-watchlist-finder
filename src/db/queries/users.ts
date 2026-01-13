@@ -1,4 +1,4 @@
-import { db } from '../../db.js';
+import { db } from '../index.js';
 import type { Statement } from 'better-sqlite3';
 
 export let insertUser: Statement;
