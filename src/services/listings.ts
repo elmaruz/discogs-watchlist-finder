@@ -52,7 +52,8 @@ export async function fetchListingsForRelease(
           listing.price.currencyCode,
           listing.mediaCondition,
           listing.sleeveCondition,
-          JSON.stringify(listing.release.genres.map((genre) => genre.name))
+          JSON.stringify(listing.release.genres.map((genre) => genre.name)),
+          JSON.stringify(listing.release.formatNames)
         );
       }
 

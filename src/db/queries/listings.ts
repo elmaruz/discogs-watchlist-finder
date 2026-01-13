@@ -6,7 +6,7 @@ export let insertListing: Statement;
 export function initListingQueries() {
   insertListing = db.prepare(`
     INSERT OR IGNORE INTO listings
-    (listing_id, release_id, seller_id, price, currency, condition, sleeve_condition, genres)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    (listing_id, release_id, seller_id, price, currency, condition, sleeve_condition, genres, format_names)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 }

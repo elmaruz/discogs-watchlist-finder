@@ -29,10 +29,10 @@ export async function fetchWantlist(
         insertWantlistItem.run(
           release.id,
           userId,
-          release.artists?.[0]?.name || null,
+          JSON.stringify(release.artists?.map((artist) => artist.name)),
           release.title,
-          release.labels?.[0]?.name || null,
-          release.labels?.[0]?.catno || null,
+          JSON.stringify(release.labels?.map((label) => label.name)),
+          JSON.stringify(release.labels?.map((label) => label.catno)),
           release.year
         );
       }

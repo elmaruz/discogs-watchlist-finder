@@ -1,6 +1,5 @@
 import * as v from 'valibot';
 
-// Leaf schemas
 export const DiscogsPaginationSchema = v.object({
   page: v.number(),
   pages: v.number(),
@@ -22,7 +21,6 @@ export const DiscogsGenreSchema = v.object({
   name: v.string(),
 });
 
-// Composite schemas
 export const DiscogsReleaseBasicSchema = v.object({
   id: v.number(),
   title: v.string(),
@@ -58,6 +56,7 @@ export const DiscogsListingSchema = v.object({
   listedDate: v.string(),
   release: v.object({
     genres: v.array(DiscogsGenreSchema),
+    formatNames: v.array(v.string()),
   }),
 });
 
@@ -76,7 +75,6 @@ export const DiscogsUserProfileSchema = v.object({
   num_collection: v.nullable(v.number()),
 });
 
-// Export inferred types
 export type DiscogsPagination = v.InferOutput<typeof DiscogsPaginationSchema>;
 export type DiscogsArtist = v.InferOutput<typeof DiscogsArtistSchema>;
 export type DiscogsLabel = v.InferOutput<typeof DiscogsLabelSchema>;

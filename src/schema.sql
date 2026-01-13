@@ -11,10 +11,10 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS wantlist (
     release_id INTEGER PRIMARY KEY,
     user_id INTEGER NOT NULL,
-    artist TEXT,
+    artists TEXT[],
     title TEXT,
-    label TEXT,
-    catno TEXT,
+    labels TEXT[],
+    catno TEXT[],
     year INTEGER,
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
@@ -35,7 +35,8 @@ CREATE TABLE IF NOT EXISTS listings (
     currency TEXT,
     condition TEXT,
     sleeve_condition TEXT,
-    genres TEXT[]
+    genres TEXT[],
+    format_names TEXT[]
 );
 
 -- Helpful indexes for query performance
