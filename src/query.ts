@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { db } from './db/index.js';
+import { db } from './db.js';
 import * as readline from 'readline';
 
 const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
