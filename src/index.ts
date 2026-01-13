@@ -4,6 +4,9 @@ import { fetchAndStoreUser } from './services/user.js';
 import { fetchWantlist } from './services/wantlist.js';
 import { fetchListingsForRelease } from './services/listings.js';
 import { getAllReleases, initQueries } from './db/queries/index.js';
+import { startQueryMode } from './query.js';
+
+const shouldQuery = process.argv.includes('--query');
 
 initSchema();
 clearSnapshot();
@@ -32,3 +35,8 @@ for (let i = 0; i < releases.length; i++) {
 }
 
 console.log('\n✅ Snapshot complete');
+
+// Launch query mode if --query flag is present
+if (shouldQuery) {
+  await startQueryMode();
+}
