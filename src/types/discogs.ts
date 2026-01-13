@@ -63,6 +63,7 @@ export const DiscogsListingSchema = v.object({
 
 export const DiscogsShopApiResponseSchema = v.object({
   items: v.array(DiscogsListingSchema),
+  totalCount: v.number(),
 });
 
 export const DiscogsUserProfileSchema = v.object({
