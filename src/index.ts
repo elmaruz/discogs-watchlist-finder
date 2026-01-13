@@ -5,6 +5,7 @@ import { fetchWantlist } from './services/wantlist.js';
 import { fetchListingsForRelease } from './services/listings.js';
 import { getAllReleases, initQueries } from './db/queries/index.js';
 import { startQueryMode } from './query.js';
+import { initBrowser, closeBrowser } from './clients/browser.js';
 
 const shouldQuery = process.argv.includes('--query');
 
@@ -22,19 +23,27 @@ const releases = getAllReleases.all();
 
 console.log(`🎯 ${releases.length} releases to process\n`);
 
-for (let i = 0; i < releases.length; i++) {
-  const { release_id } = releases[i];
-  await fetchListingsForRelease(release_id);
+// Initialize browser before fetching listings
+await initBrowser();
 
-  // Update same line with progress
-  process.stdout.write(
-    `\r📀 Progress: ${i + 1}/${releases.length} releases done`
-  );
+try {
+  for (let i = 0; i < releases.length; i++) {
+    const { release_id } = releases[i];
+    await fetchListingsForRelease(release_id);
 
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+    // Update same line with progress
+    process.stdout.write(
+      `\r📀 Progress: ${i + 1}/${releases.length} releases done`
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+
+  console.log('\n✅ Snapshot complete');
+} finally {
+  // Always close browser, even if there's an error
+  await closeBrowser();
 }
-
-console.log('\n✅ Snapshot complete');
 
 // Launch query mode if --query flag is present
 if (shouldQuery) {
