@@ -1,6 +1,6 @@
 # Discogs Wantlist Snapshot
 
-A lightweight TypeScript tool that creates a **queryable SQLite snapshot** of Discogs marketplace listings matching your personal wantlist.
+A lightweight TypeScript CLI tool that creates a **queryable SQLite snapshot** of Discogs marketplace listings matching your personal wantlist.
 
 Each run produces a standalone database file that can be queried locally to answer questions like:
 
