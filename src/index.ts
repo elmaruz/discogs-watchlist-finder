@@ -17,13 +17,18 @@ await fetchWantlist(username, userId);
 
 const releases = getAllReleases.all();
 
-console.log(`🎯 ${releases.length} releases`);
+console.log(`🎯 ${releases.length} releases to process\n`);
 
-for (const { release_id } of releases) {
-  console.log(`📀 Release ${release_id}`);
+for (let i = 0; i < releases.length; i++) {
+  const { release_id } = releases[i];
   await fetchListingsForRelease(release_id);
+
+  // Update same line with progress
+  process.stdout.write(
+    `\r📀 Progress: ${i + 1}/${releases.length} releases done`
+  );
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
 }
 
-console.log('✅ Snapshot complete');
+console.log('\n✅ Snapshot complete');
