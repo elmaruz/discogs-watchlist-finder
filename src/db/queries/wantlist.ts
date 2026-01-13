@@ -7,7 +7,7 @@ export let getAllReleases: Statement<unknown[], { release_id: number }>;
 export function initWantlistQueries() {
   insertWantlistItem = db.prepare(`
     INSERT OR IGNORE INTO wantlist
-    (release_id, user_id, artist, title, label, catno, year)
+    (release_id, user_id, artists, title, labels, catno, year)
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
 

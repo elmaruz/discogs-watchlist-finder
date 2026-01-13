@@ -35,7 +35,8 @@ CREATE TABLE IF NOT EXISTS listings (
     currency TEXT,
     condition TEXT,
     sleeve_condition TEXT,
-    genres TEXT[]
+    genres TEXT[],
+    format_names TEXT[]
 );
 
 -- Helpful indexes for query performance

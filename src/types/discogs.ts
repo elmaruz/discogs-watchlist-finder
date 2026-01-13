@@ -56,6 +56,7 @@ export const DiscogsListingSchema = v.object({
   listedDate: v.string(),
   release: v.object({
     genres: v.array(DiscogsGenreSchema),
+    formatNames: v.array(v.string()),
   }),
 });
 
