@@ -44,8 +44,6 @@ export async function fetchListingsForRelease(
         JSON.stringify(listing.release.genres.map((genre) => genre.name))
       );
     }
-
-    console.log(`✔ Release ${releaseId} - ${data.items.length} listings`);
   } catch (error) {
     handleApiError(error, `Fetching listings for release ${releaseId}`);
     return;
