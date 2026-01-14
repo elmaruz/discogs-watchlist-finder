@@ -68,7 +68,11 @@ export async function fetchListingsForRelease(
             const jitter = Math.random() * 500;
             const delay = baseDelay + jitter;
 
-            console.log(`\n⚠️  Cloudflare challenge failed, retrying (${retries}/${maxRetries}) in ${Math.round(delay/1000)}s...`);
+            console.log(
+              `\n⚠️  Cloudflare challenge failed, retrying (${retries}/${maxRetries}) in ${Math.round(
+                delay / 1000
+              )}s...`
+            );
             await new Promise((resolve) => setTimeout(resolve, delay));
             continue;
           }

@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { db } from './db.js';
+import { db } from './db/index.js';
 import * as readline from 'readline';
 
 const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
@@ -26,13 +26,15 @@ function getSchemaText(): string {
   return `${formatted}
 
 Relationships:
-- listings.seller_id → sellers.seller_id
-- listings.release_id → wantlist.release_id
 - wantlist.user_id → users.user_id
+- wantlist.release_id → releases.release_id
+- listings.release_id → releases.release_id
+- listings.seller_id → sellers.seller_id
 
 Context:
 - SQLite database with data for ONE user only
-- The wantlist table contains all releases the user wants
+- The releases table contains all album/record information
+- The wantlist table is a bridge table linking users to releases they want
 - Do NOT filter by user_id - all data belongs to the same user`;
 }
 
@@ -47,18 +49,19 @@ async function generateSQL(
       content: `You generate SQLite queries for a Discogs music marketplace database. Use SQLite-specific syntax and functions only.
 
 Domain context - Discogs music marketplace terminology:
-- "records", "albums", "releases" → wantlist table (releases user wants to buy)
+- "records", "albums", "releases" → releases table (album/record information)
+- "wantlist" → bridge table linking users to releases they want
 - "listings" → listings table (available items for sale)
 - "items" → could mean releases or listings depending on context
 - "bundles" → multiple listings from same seller
 - "labels" → record labels (labels column), NOT database labels
-- "price" → use both price_amount and price_currency columns
+- "price" → use both price and currency columns
 
-Schema:\n${schema}\n\nExamples:\nQ: "Show me all releases"\nA: SELECT title, artists, labels, year FROM wantlist;\n\nQ: "Which sellers have most listings?"\nA: SELECT s.username, COUNT(*) as listing_count FROM sellers s JOIN listings l ON s.seller_id = l.seller_id GROUP BY s.seller_id, s.username ORDER BY listing_count DESC LIMIT 10;\n\nQ: "Show unique releases with cheapest price"\nA: SELECT w.title, MIN(l.price_amount) as price, l.price_currency FROM wantlist w JOIN listings l ON w.release_id = l.release_id GROUP BY w.release_id, w.title, l.price_currency ORDER BY price ASC;\n\nImportant rules:
+Schema:\n${schema}\n\nExamples:\nQ: "Show me all releases"\nA: SELECT r.title, r.artists, r.labels, r.year FROM releases r JOIN wantlist w ON r.release_id = w.release_id;\n\nQ: "Which sellers have most listings?"\nA: SELECT s.username, COUNT(*) as listing_count FROM sellers s JOIN listings l ON s.seller_id = l.seller_id GROUP BY s.seller_id, s.username ORDER BY listing_count DESC LIMIT 10;\n\nQ: "Show unique releases with cheapest price"\nA: SELECT r.title, MIN(l.price) as price, l.currency FROM releases r JOIN wantlist w ON r.release_id = w.release_id JOIN listings l ON r.release_id = l.release_id GROUP BY r.release_id, r.title, l.currency ORDER BY price ASC;\n\nImportant rules:
 - This is a SQLite database - use SQLite syntax and functions (NOT PostgreSQL, MySQL, etc.)
 - DO use IDs effectively in WHERE/JOIN/GROUP BY/DISTINCT for accuracy (e.g., COUNT(DISTINCT release_id), GROUP BY seller_id)
 - NEVER include ID columns in final SELECT output - only human-readable names
-- For prices, always include both price_amount and price_currency columns
+- For prices, always include both price and currency columns
 - For uniqueness constraints (e.g., "unique releases"), use DISTINCT or GROUP BY on the appropriate ID column
 - For follow-up questions that ask to "include" or "add" information, rebuild the entire query with the additional columns
 - Always recalculate aggregates like COUNT() - don't assume calculated columns exist
