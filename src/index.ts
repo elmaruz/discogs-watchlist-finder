@@ -4,7 +4,7 @@ import { fetchAndStoreUser } from './services/user.js';
 import { fetchWantlist } from './services/wantlist.js';
 import { fetchListingsForRelease } from './services/listings.js';
 import { getAllReleases } from './db/queries/index.js';
-import { startQueryMode } from './query.js';
+import { startQueryMode } from './query/index.js';
 import { initBrowser, closeBrowser } from './clients/browser.js';
 
 const shouldQuery = process.argv.includes('--query');
@@ -30,7 +30,6 @@ try {
     const { release_id } = releases[i];
     await fetchListingsForRelease(release_id);
 
-    // Update same line with progress
     process.stdout.write(
       `\r📀 Progress: ${i + 1}/${releases.length} releases done`
     );

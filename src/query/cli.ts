@@ -1,4 +1,4 @@
 import 'dotenv/config';
-import { startQueryMode } from './query.js';
+import { startQueryMode } from './index.js';
 
 await startQueryMode();
