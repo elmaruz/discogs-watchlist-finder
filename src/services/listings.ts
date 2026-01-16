@@ -30,22 +30,22 @@ export async function fetchListingsForRelease(
         totalCount = data.totalCount;
 
         for (const listing of data.items) {
-          insertSeller.run(
+          insertSeller(
             listing.seller.uid,
             listing.seller.name,
-            listing.seller.rating,
-            listing.seller.ratingCount,
-            listing.seller.shipsFrom
+            listing.seller.rating ?? null,
+            listing.seller.ratingCount ?? null,
+            listing.seller.shipsFrom ?? null
           );
 
-          insertListing.run(
+          insertListing(
             listing.itemId,
             releaseId,
             listing.seller.uid,
             listing.price.amount,
             listing.price.currencyCode,
-            listing.mediaCondition,
-            listing.sleeveCondition,
+            listing.mediaCondition ?? null,
+            listing.sleeveCondition ?? null,
             JSON.stringify(listing.release.genres.map((genre) => genre.name)),
             JSON.stringify(listing.release.formatNames)
           );

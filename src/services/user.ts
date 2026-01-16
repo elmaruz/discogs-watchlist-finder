@@ -14,7 +14,7 @@ export async function fetchAndStoreUser(username: string): Promise<number> {
       `User profile for "${username}"`
     );
 
-    insertUser.run(
+    insertUser(
       user.id,
       user.username,
       user.name,

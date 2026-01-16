@@ -26,14 +26,14 @@ export async function fetchWantlist(
 
       for (const want of wantlist.wants) {
         const release = want.basic_information;
-        insertWantlistItem.run(
+        insertWantlistItem(
           release.id,
           userId,
           JSON.stringify(release.artists?.map((artist) => artist.name)),
           release.title,
           JSON.stringify(release.labels?.map((label) => label.name)),
           JSON.stringify(release.labels?.map((label) => label.catno)),
-          release.year
+          release.year ?? null
         );
       }
 

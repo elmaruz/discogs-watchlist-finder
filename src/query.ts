@@ -1,29 +1,30 @@
 import OpenAI from 'openai';
-import { db } from './db.js';
+import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 import * as readline from 'readline';
+import { getTables, getTableColumns, runSQL } from './db/queries/index.js';
+import { type SqliteTable, type SqlRow } from './types/database.js';
 
 const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
   : null;
 
-function getSchemaText(): string {
-  const tables = db
-    .prepare("SELECT name FROM sqlite_master WHERE type='table'")
-    .all() as Array<{ name: string }>;
-
+function formatTables(tables: SqliteTable[]): string {
   const formatted = tables
     .map((table) => {
-      const columns = db.pragma(`table_info('${table.name}')`) as Array<{
-        name: string;
-        type: string;
-      }>;
+      const columns = getTableColumns(table.name);
       const cols = columns.map((c) => `  ${c.name} ${c.type}`).join('\n');
       return `${table.name}:\n${cols}`;
     })
     .join('\n\n');
 
-  return `${formatted}
+  return `${formatted}`;
+}
+
+function getSchemaText(): string {
+  const tables = getTables();
+
+  return `${formatTables(tables)}
 
 Relationships:
 - listings.seller_id → sellers.seller_id
@@ -36,12 +37,30 @@ Context:
 - Do NOT filter by user_id - all data belongs to the same user`;
 }
 
+function validateSqlQuery(sql: string) {
+  const lower = sql.toLowerCase().trim();
+  if (
+    !lower.startsWith('select') &&
+    !lower.startsWith('with') &&
+    !lower.startsWith('explain')
+  ) {
+    throw new Error(
+      `Only read-only queries allowed. Generated SQL: ${sql.substring(0, 100)}`
+    );
+  }
+}
+
+function executeSQL(sql: string): SqlRow[] {
+  validateSqlQuery(sql);
+  return runSQL(sql);
+}
+
 async function generateSQL(
   question: string,
   schema: string,
-  history: Array<any>
+  history: ChatCompletionMessageParam[]
 ): Promise<string> {
-  const messages = [
+  const messages: ChatCompletionMessageParam[] = [
     {
       role: 'system',
       content: `You generate SQLite queries for a Discogs music marketplace database. Use SQLite-specific syntax and functions only.
@@ -77,41 +96,25 @@ Return ONLY executable SQL starting with SELECT, WITH, or EXPLAIN. No markdown, 
     temperature: 0,
   });
 
-  let sql = (response.choices[0].message.content || '').trim();
+  const rawSql = (response.choices[0].message.content || '').trim();
 
-  // Remove markdown code fences and common prefixes
-  sql = sql
+  const cleanedSql = rawSql
     .replace(/```sql\n?/gi, '')
     .replace(/```\n?/g, '')
     .replace(/^(SQL:\s*)/i, '');
 
-  // Add semicolon if missing
-  if (!sql.endsWith(';')) sql += ';';
+  const sql = cleanedSql.endsWith(';') ? cleanedSql : `${cleanedSql};`;
 
   return sql;
-}
-
-function executeSQL(sql: string): any[] {
-  const lower = sql.toLowerCase().trim();
-  if (
-    !lower.startsWith('select') &&
-    !lower.startsWith('with') &&
-    !lower.startsWith('explain')
-  ) {
-    throw new Error(
-      `Only read-only queries allowed. Generated SQL: ${sql.substring(0, 100)}`
-    );
-  }
-  return db.prepare(sql).all();
 }
 
 async function formatAnswer(
   question: string,
   sql: string,
-  results: any[],
-  history: Array<any>
+  results: SqlRow[],
+  history: ChatCompletionMessageParam[]
 ): Promise<string> {
-  const messages = [
+  const messages: ChatCompletionMessageParam[] = [
     {
       role: 'system',
       content: `You provide friendly, precise natural language answers about a Discogs music marketplace database.
@@ -157,8 +160,8 @@ export async function startQueryMode(): Promise<void> {
   console.log("Type 'exit' to quit, 'schema' to view database schema\n");
 
   const schema = getSchemaText();
-  const sqlHistory: Array<{ role: string; content: string }> = [];
-  const answerHistory: Array<{ role: string; content: string }> = [];
+  const sqlHistory: ChatCompletionMessageParam[] = [];
+  const answerHistory: ChatCompletionMessageParam[] = [];
 
   const rl = readline.createInterface({
     input: process.stdin,
