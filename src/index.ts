@@ -3,7 +3,7 @@ import { initSchema, clearSnapshot } from './db/index.js';
 import { fetchAndStoreUser } from './services/user.js';
 import { fetchWantlist } from './services/wantlist.js';
 import { fetchListingsForRelease } from './services/listings.js';
-import { getAllReleases } from './db/queries/index.js';
+import { getAllWantlistReleases } from './db/queries/index.js';
 import { startQueryMode } from './query/index.js';
 import { initBrowser, closeBrowser } from './clients/browser.js';
 
@@ -18,7 +18,7 @@ if (!username) throw new Error('Missing DISCOGS_USERNAME');
 const userId = await fetchAndStoreUser(username);
 await fetchWantlist(username, userId);
 
-const releases = getAllReleases();
+const releases = getAllWantlistReleases();
 
 console.log(`🎯 ${releases.length} releases to process\n`);
 

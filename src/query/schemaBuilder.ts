@@ -19,13 +19,15 @@ export function getSchemaText(): string {
   return `${formatTables(tables)}
 
 Relationships:
-- listings.seller_id → sellers.seller_id
-- listings.release_id → wantlist.release_id
 - wantlist.user_id → users.user_id
+- wantlist.release_id → releases.release_id
+- listings.release_id → releases.release_id
+- listings.seller_id → sellers.seller_id
 
 Context:
 - SQLite database with data for ONE user only
-- The wantlist table contains all releases the user wants
+- The releases table contains all album/record information
+- The wantlist table is a bridge table linking users to releases they want
 - Do NOT filter by user_id - all data belongs to the same user`;
 }
 
