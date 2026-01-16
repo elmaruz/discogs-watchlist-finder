@@ -1,30 +1,18 @@
 import * as v from 'valibot';
 import { db } from '../index.js';
-import {
-  ReleaseIdSchema,
-  type ReleaseId,
-  type Nullable,
-} from '../../types/database.js';
+import { ReleaseIdSchema, type ReleaseId } from '../../types/database.js';
 
-export function insertWantlistItem(
-  releaseId: number,
-  userId: number,
-  artists: string,
-  title: string,
-  labels: string,
-  catno: string,
-  year: Nullable<number>
-): void {
+export function insertWantlistItem(userId: number, releaseId: number): void {
   db.prepare(
     `
     INSERT OR IGNORE INTO wantlist
-    (release_id, user_id, artists, title, labels, catno, year)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    (user_id, release_id)
+    VALUES (?, ?)
   `
-  ).run(releaseId, userId, artists, title, labels, catno, year);
+  ).run(userId, releaseId);
 }
 
-export function getAllReleases(): ReleaseId[] {
+export function getAllWantlistReleases(): ReleaseId[] {
   const results = db
     .prepare(
       `

@@ -1,7 +1,7 @@
 import { discogs } from '../clients/index.js';
 import { DiscogsWantlistResponseSchema } from '../types/discogs.js';
 import { handleApiError } from '../utils/errorHandler.js';
-import { insertWantlistItem } from '../db/queries/index.js';
+import { insertRelease, insertWantlistItem } from '../db/queries/index.js';
 import { validate } from '../utils/validation.js';
 
 export async function fetchWantlist(
@@ -26,15 +26,17 @@ export async function fetchWantlist(
 
       for (const want of wantlist.wants) {
         const release = want.basic_information;
-        insertWantlistItem(
+
+        insertRelease(
           release.id,
-          userId,
-          JSON.stringify(release.artists?.map((artist) => artist.name)),
           release.title,
+          JSON.stringify(release.artists?.map((artist) => artist.name)),
           JSON.stringify(release.labels?.map((label) => label.name)),
           JSON.stringify(release.labels?.map((label) => label.catno)),
           release.year ?? null
         );
+
+        insertWantlistItem(userId, release.id);
       }
 
       console.log(`✔ Wantlist page ${page}/${pages}`);
