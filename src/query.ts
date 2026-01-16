@@ -1,16 +1,15 @@
 import OpenAI from 'openai';
+import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 import * as readline from 'readline';
 import { getTables, getTableColumns, runSQL } from './db/queries/index.js';
-import type { SqlRow } from './types/database.js';
+import { type SqliteTable, type SqlRow } from './types/database.js';
 
 const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
   : null;
 
-function getSchemaText(): string {
-  const tables = getTables();
-
+function formatTables(tables: SqliteTable[]): string {
   const formatted = tables
     .map((table) => {
       const columns = getTableColumns(table.name);
@@ -19,7 +18,13 @@ function getSchemaText(): string {
     })
     .join('\n\n');
 
-  return `${formatted}
+  return `${formatted}`;
+}
+
+function getSchemaText(): string {
+  const tables = getTables();
+
+  return `${formatTables(tables)}
 
 Relationships:
 - listings.seller_id → sellers.seller_id
@@ -32,7 +37,7 @@ Context:
 - Do NOT filter by user_id - all data belongs to the same user`;
 }
 
-function executeSQL(sql: string): SqlRow[] {
+function validateSqlQuery(sql: string) {
   const lower = sql.toLowerCase().trim();
   if (
     !lower.startsWith('select') &&
@@ -43,15 +48,19 @@ function executeSQL(sql: string): SqlRow[] {
       `Only read-only queries allowed. Generated SQL: ${sql.substring(0, 100)}`
     );
   }
+}
+
+function executeSQL(sql: string): SqlRow[] {
+  validateSqlQuery(sql);
   return runSQL(sql);
 }
 
 async function generateSQL(
   question: string,
   schema: string,
-  history: Array<any>
+  history: ChatCompletionMessageParam[]
 ): Promise<string> {
-  const messages = [
+  const messages: ChatCompletionMessageParam[] = [
     {
       role: 'system',
       content: `You generate SQLite queries for a Discogs music marketplace database. Use SQLite-specific syntax and functions only.
@@ -87,16 +96,14 @@ Return ONLY executable SQL starting with SELECT, WITH, or EXPLAIN. No markdown, 
     temperature: 0,
   });
 
-  let sql = (response.choices[0].message.content || '').trim();
+  const rawSql = (response.choices[0].message.content || '').trim();
 
-  // Remove markdown code fences and common prefixes
-  sql = sql
+  const cleanedSql = rawSql
     .replace(/```sql\n?/gi, '')
     .replace(/```\n?/g, '')
     .replace(/^(SQL:\s*)/i, '');
 
-  // Add semicolon if missing
-  if (!sql.endsWith(';')) sql += ';';
+  const sql = cleanedSql.endsWith(';') ? cleanedSql : `${cleanedSql};`;
 
   return sql;
 }
@@ -105,9 +112,9 @@ async function formatAnswer(
   question: string,
   sql: string,
   results: SqlRow[],
-  history: Array<any>
+  history: ChatCompletionMessageParam[]
 ): Promise<string> {
-  const messages = [
+  const messages: ChatCompletionMessageParam[] = [
     {
       role: 'system',
       content: `You provide friendly, precise natural language answers about a Discogs music marketplace database.
@@ -153,8 +160,8 @@ export async function startQueryMode(): Promise<void> {
   console.log("Type 'exit' to quit, 'schema' to view database schema\n");
 
   const schema = getSchemaText();
-  const sqlHistory: Array<{ role: string; content: string }> = [];
-  const answerHistory: Array<{ role: string; content: string }> = [];
+  const sqlHistory: ChatCompletionMessageParam[] = [];
+  const answerHistory: ChatCompletionMessageParam[] = [];
 
   const rl = readline.createInterface({
     input: process.stdin,
