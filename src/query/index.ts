@@ -45,6 +45,7 @@ export async function startQueryMode(): Promise<void> {
 
       try {
         console.log('\n🔍 Thinking...');
+        console.log();
 
         if (process.env.DEBUG_HISTORY === 'true') {
           console.log(`[DEBUG] SQL history: ${sqlHistory.length} messages`);
@@ -61,7 +62,7 @@ export async function startQueryMode(): Promise<void> {
           results,
           answerHistory
         );
-        console.log(`\n🤖 ${answer}\n`);
+        console.log();
 
         // Update SQL history (questions, SQL queries, and result summaries for context)
         sqlHistory.push({ role: 'user', content: question });
