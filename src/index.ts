@@ -3,7 +3,7 @@ import { initSchema, clearSnapshot } from './db/index.js';
 import { fetchAndStoreUser } from './services/user.js';
 import { fetchWantlist } from './services/wantlist.js';
 import { fetchListingsForRelease } from './services/listings.js';
-import { getAllReleases, initQueries } from './db/queries/index.js';
+import { getAllReleases } from './db/queries/index.js';
 import { startQueryMode } from './query.js';
 import { initBrowser, closeBrowser } from './clients/browser.js';
 
@@ -11,7 +11,6 @@ const shouldQuery = process.argv.includes('--query');
 
 initSchema();
 clearSnapshot();
-initQueries();
 
 const username = process.env.DISCOGS_USERNAME!;
 if (!username) throw new Error('Missing DISCOGS_USERNAME');
@@ -19,7 +18,7 @@ if (!username) throw new Error('Missing DISCOGS_USERNAME');
 const userId = await fetchAndStoreUser(username);
 await fetchWantlist(username, userId);
 
-const releases = getAllReleases.all();
+const releases = getAllReleases();
 
 console.log(`🎯 ${releases.length} releases to process\n`);
 

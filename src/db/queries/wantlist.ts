@@ -1,17 +1,36 @@
+import * as v from 'valibot';
 import { db } from '../index.js';
-import type { Statement } from 'better-sqlite3';
+import {
+  ReleaseIdSchema,
+  type ReleaseId,
+  type Nullable,
+} from '../../types/database.js';
 
-export let insertWantlistItem: Statement;
-export let getAllReleases: Statement<unknown[], { release_id: number }>;
-
-export function initWantlistQueries() {
-  insertWantlistItem = db.prepare(`
+export function insertWantlistItem(
+  releaseId: number,
+  userId: number,
+  artists: string,
+  title: string,
+  labels: string,
+  catno: string,
+  year: Nullable<number>
+): void {
+  db.prepare(
+    `
     INSERT OR IGNORE INTO wantlist
     (release_id, user_id, artists, title, labels, catno, year)
     VALUES (?, ?, ?, ?, ?, ?, ?)
-  `);
+  `
+  ).run(releaseId, userId, artists, title, labels, catno, year);
+}
 
-  getAllReleases = db.prepare<unknown[], { release_id: number }>(`
+export function getAllReleases(): ReleaseId[] {
+  const results = db
+    .prepare(
+      `
     SELECT release_id FROM wantlist
-  `);
+  `
+    )
+    .all();
+  return v.parse(v.array(ReleaseIdSchema), results);
 }

@@ -1,12 +1,20 @@
 import { db } from '../index.js';
-import type { Statement } from 'better-sqlite3';
+import type { Nullable } from '../../types/database.js';
 
-export let insertUser: Statement;
-
-export function initUserQueries() {
-  insertUser = db.prepare(`
+export function insertUser(
+  userId: number,
+  username: string,
+  name: Nullable<string>,
+  profile: Nullable<string>,
+  registered: Nullable<string>,
+  numWantlist: Nullable<number>,
+  numCollection: Nullable<number>
+): void {
+  db.prepare(
+    `
     INSERT OR REPLACE INTO users
     (user_id, username, name, profile, registered, num_wantlist, num_collection)
     VALUES (?, ?, ?, ?, ?, ?, ?)
-  `);
+  `
+  ).run(userId, username, name, profile, registered, numWantlist, numCollection);
 }

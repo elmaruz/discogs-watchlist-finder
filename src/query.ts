@@ -1,6 +1,8 @@
 import OpenAI from 'openai';
-import { db } from './db.js';
+import * as v from 'valibot';
+import { db } from './db/index.js';
 import * as readline from 'readline';
+import { SqliteTableSchema, SqliteColumnInfoSchema } from './types/database.js';
 
 const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 const openai = process.env.OPENAI_API_KEY
@@ -8,16 +10,16 @@ const openai = process.env.OPENAI_API_KEY
   : null;
 
 function getSchemaText(): string {
-  const tables = db
+  const tablesResult = db
     .prepare("SELECT name FROM sqlite_master WHERE type='table'")
-    .all() as Array<{ name: string }>;
+    .all();
+
+  const tables = v.parse(v.array(SqliteTableSchema), tablesResult);
 
   const formatted = tables
     .map((table) => {
-      const columns = db.pragma(`table_info('${table.name}')`) as Array<{
-        name: string;
-        type: string;
-      }>;
+      const columnsResult = db.pragma(`table_info('${table.name}')`);
+      const columns = v.parse(v.array(SqliteColumnInfoSchema), columnsResult);
       const cols = columns.map((c) => `  ${c.name} ${c.type}`).join('\n');
       return `${table.name}:\n${cols}`;
     })
