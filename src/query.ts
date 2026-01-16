@@ -1,8 +1,7 @@
 import OpenAI from 'openai';
-import * as v from 'valibot';
-import { db } from './db/index.js';
 import * as readline from 'readline';
-import { SqliteTableSchema, SqliteColumnInfoSchema } from './types/database.js';
+import { getTables, getTableColumns, runSQL } from './db/queries/index.js';
+import type { SqlRow } from './types/database.js';
 
 const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 const openai = process.env.OPENAI_API_KEY
@@ -10,16 +9,11 @@ const openai = process.env.OPENAI_API_KEY
   : null;
 
 function getSchemaText(): string {
-  const tablesResult = db
-    .prepare("SELECT name FROM sqlite_master WHERE type='table'")
-    .all();
-
-  const tables = v.parse(v.array(SqliteTableSchema), tablesResult);
+  const tables = getTables();
 
   const formatted = tables
     .map((table) => {
-      const columnsResult = db.pragma(`table_info('${table.name}')`);
-      const columns = v.parse(v.array(SqliteColumnInfoSchema), columnsResult);
+      const columns = getTableColumns(table.name);
       const cols = columns.map((c) => `  ${c.name} ${c.type}`).join('\n');
       return `${table.name}:\n${cols}`;
     })
@@ -36,6 +30,20 @@ Context:
 - SQLite database with data for ONE user only
 - The wantlist table contains all releases the user wants
 - Do NOT filter by user_id - all data belongs to the same user`;
+}
+
+function executeSQL(sql: string): SqlRow[] {
+  const lower = sql.toLowerCase().trim();
+  if (
+    !lower.startsWith('select') &&
+    !lower.startsWith('with') &&
+    !lower.startsWith('explain')
+  ) {
+    throw new Error(
+      `Only read-only queries allowed. Generated SQL: ${sql.substring(0, 100)}`
+    );
+  }
+  return runSQL(sql);
 }
 
 async function generateSQL(
@@ -93,24 +101,10 @@ Return ONLY executable SQL starting with SELECT, WITH, or EXPLAIN. No markdown, 
   return sql;
 }
 
-function executeSQL(sql: string): any[] {
-  const lower = sql.toLowerCase().trim();
-  if (
-    !lower.startsWith('select') &&
-    !lower.startsWith('with') &&
-    !lower.startsWith('explain')
-  ) {
-    throw new Error(
-      `Only read-only queries allowed. Generated SQL: ${sql.substring(0, 100)}`
-    );
-  }
-  return db.prepare(sql).all();
-}
-
 async function formatAnswer(
   question: string,
   sql: string,
-  results: any[],
+  results: SqlRow[],
   history: Array<any>
 ): Promise<string> {
   const messages = [
