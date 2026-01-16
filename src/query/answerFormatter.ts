@@ -44,11 +44,19 @@ Formatting rules:
   ];
 
   if (!openai) throw new Error('OPENAI_API_KEY not set');
-  const response = await openai.chat.completions.create({
+  const stream = await openai.chat.completions.create({
     model: MODEL,
     messages,
     temperature: 0,
+    stream: true,
   });
 
-  return response.choices[0].message.content?.trim() || '';
+  let fullAnswer = '';
+  for await (const chunk of stream) {
+    const content = chunk.choices[0]?.delta?.content || '';
+    process.stdout.write(content);
+    fullAnswer += content;
+  }
+
+  return fullAnswer.trim();
 }
