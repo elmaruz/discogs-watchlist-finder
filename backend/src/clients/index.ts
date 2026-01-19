@@ -5,7 +5,7 @@ import { fetchListingsForRelease } from '../services/listings.js';
 const limiter = new Bottleneck({ minTime: 1100 });
 
 export const fetchListingsForReleaseLimited = limiter.wrap(
-  fetchListingsForRelease
+  fetchListingsForRelease,
 );
 
 const client: AxiosInstance = axios.create({

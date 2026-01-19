@@ -7,12 +7,12 @@ const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
   : null;
 
-export async function formatAnswer(
+export async function* formatAnswerStream(
   question: string,
   sql: string,
   results: SqlRow[],
   history: ChatCompletionMessageParam[]
-): Promise<string> {
+): AsyncGenerator<string, string, unknown> {
   const messages: ChatCompletionMessageParam[] = [
     {
       role: 'system',
@@ -54,8 +54,27 @@ Formatting rules:
   let fullAnswer = '';
   for await (const chunk of stream) {
     const content = chunk.choices[0]?.delta?.content || '';
-    process.stdout.write(content);
-    fullAnswer += content;
+    if (content) {
+      fullAnswer += content;
+      yield content;
+    }
+  }
+
+  return fullAnswer.trim();
+}
+
+export async function formatAnswer(
+  question: string,
+  sql: string,
+  results: SqlRow[],
+  history: ChatCompletionMessageParam[]
+): Promise<string> {
+  let fullAnswer = '';
+  const generator = formatAnswerStream(question, sql, results, history);
+
+  for await (const chunk of generator) {
+    process.stdout.write(chunk);
+    fullAnswer += chunk;
   }
 
   return fullAnswer.trim();
