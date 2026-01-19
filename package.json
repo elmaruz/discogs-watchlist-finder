@@ -1,34 +1,26 @@
 {
-  "name": "discogs-seller-matcher",
+  "name": "discogs-wantlist-finder",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Find sellers with multiple items from your Discogs wantlist",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "lib",
+    "backend",
+    "frontend"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsx src/index.ts",
-    "query": "tsx src/query/cli.ts"
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "npm run dev -w backend",
+    "dev:frontend": "npm run dev -w frontend",
+    "build": "npm run build -w lib && npm run build -w backend && npm run build -w frontend",
+    "start": "npm run start -w backend"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
-  "dependencies": {
-    "axios": "^1.13.2",
-    "better-sqlite3": "^12.6.0",
-    "bottleneck": "^2.19.5",
-    "cheerio": "^1.1.2",
-    "dotenv": "^17.2.3",
-    "openai": "^6.16.0",
-    "pg": "^8.16.3",
-    "playwright": "^1.57.0",
-    "valibot": "^1.2.0"
-  },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.13",
-    "@types/cheerio": "^0.22.35",
-    "@types/node": "^25.0.6",
-    "ts-node": "^10.9.2",
-    "tsx": "^4.21.0",
+    "concurrently": "^9.1.2",
     "typescript": "^5.9.3"
   }
 }
