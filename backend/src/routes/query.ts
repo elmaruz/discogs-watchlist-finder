@@ -17,7 +17,7 @@ const conversations = new Map<string, ConversationState>();
 
 const QueryRequestSchema = v.object({
   question: v.pipe(v.string(), v.minLength(1)),
-  conversationId: v.optional(v.string()),
+  conversationId: v.nullish(v.string()),
 });
 
 router.get('/schema', (_req: Request, res: Response) => {
@@ -26,7 +26,7 @@ router.get('/schema', (_req: Request, res: Response) => {
 
 router.post('/', async (req: Request, res: Response) => {
   let question: string;
-  let conversationId: string | undefined;
+  let conversationId: string | undefined | null;
 
   try {
     const body = validate(QueryRequestSchema, req.body, 'Query request body');

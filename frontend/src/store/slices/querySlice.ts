@@ -7,7 +7,7 @@ export interface Message {
   sql?: string;
 }
 
-interface QueryState {
+export interface QueryState {
   messages: Message[];
   isStreaming: boolean;
   currentStreamingText: string;

@@ -1,17 +1,20 @@
-import Database from 'better-sqlite3';
+import Database, { type Database as DatabaseType } from 'better-sqlite3';
 import fs from 'fs';
+import path from 'path';
 
-const path = `snapshots/discogs_snapshot.sqlite`;
+const rootDir = path.resolve(import.meta.dirname, '../../..');
+const dbPath = path.join(rootDir, 'snapshots/discogs_snapshot.sqlite');
 
-fs.mkdirSync('snapshots', { recursive: true });
+fs.mkdirSync(path.join(rootDir, 'snapshots'), { recursive: true });
 
-export const db = new Database(path);
+export const db: DatabaseType = new Database(dbPath);
 
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 
 export function initSchema(): void {
-  const schema = fs.readFileSync('src/db/schema.sql', 'utf8');
+  const schemaPath = path.join(import.meta.dirname, 'schema.sql');
+  const schema = fs.readFileSync(schemaPath, 'utf8');
   db.exec(schema);
 }
 
@@ -26,4 +29,4 @@ export function clearSnapshot(): void {
   console.log('✔ Previous snapshot cleared');
 }
 
-console.log(`📦 Snapshot DB created: ${path}`);
+console.log(`📦 Snapshot DB created: ${dbPath}`);

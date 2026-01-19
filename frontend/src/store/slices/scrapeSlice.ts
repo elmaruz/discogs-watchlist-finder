@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
-interface ScrapeState {
+export interface ScrapeState {
   status: 'idle' | 'running' | 'completed' | 'error';
   progress: { current: number; total: number };
   currentRelease: string;
