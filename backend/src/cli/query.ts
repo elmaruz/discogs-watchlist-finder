@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import * as readline from 'readline';
-import { processQuery, getSchema } from '../query/service.js';
+import { processQuery, getSchema } from '../services/query.js';
 import type { HistoryMessage } from '@discogs-wantlist-finder/lib';
 
 const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
@@ -74,9 +74,7 @@ async function main(): Promise<void> {
           }
         }
       } catch (error) {
-        console.error(
-          `\n❌ ${error instanceof Error ? error.message : error}`
-        );
+        console.error(`\n❌ ${error instanceof Error ? error.message : error}`);
       }
 
       askQuestion();

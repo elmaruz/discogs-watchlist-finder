@@ -1,8 +1,10 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
-import { processQuery, getSchema } from '../query/service.js';
+import { processQuery, getSchema } from '../services/query.js';
 import { parseBody } from '../utils/validation.js';
-import { QueryRequestSchema, type QueryEvent } from '@discogs-wantlist-finder/lib';
+import { QueryRequestSchema } from '@discogs-wantlist-finder/lib';
+import { sendEvent, setStreamHeaders } from '../utils/middleware.js';
+import { handleApiError } from '../utils/errorHandler.js';
 
 const router = Router();
 
@@ -16,23 +18,16 @@ router.post('/', async (req: Request, res: Response) => {
 
   const { question, history } = body;
 
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-  res.flushHeaders();
-
-  const sendEvent = (event: QueryEvent) => {
-    res.write(`data: ${JSON.stringify(event)}\n\n`);
-  };
+  setStreamHeaders(res);
 
   try {
     for await (const event of processQuery(question, history)) {
-      sendEvent(event);
+      sendEvent(res)(event);
     }
   } catch (error) {
-    sendEvent({
+    sendEvent(res)({
       type: 'error',
-      message: error instanceof Error ? error.message : String(error),
+      message: handleApiError(error, 'Query endpoint failed'),
     });
   } finally {
     res.end();

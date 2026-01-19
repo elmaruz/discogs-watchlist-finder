@@ -1,7 +1,7 @@
 import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
-import { getSchemaText, executeSQL } from './schemaBuilder.js';
-import { generateSQL } from './sqlGenerator.js';
-import { formatAnswerStream } from './answerFormatter.js';
+import { getSchemaText, executeSQL } from '../utils/query/schemaBuilder.js';
+import { generateSQL } from '../utils/query/sqlGenerator.js';
+import { formatAnswerStream } from '../utils/query/answerFormatter.js';
 import type { QueryEvent, HistoryMessage } from '@discogs-wantlist-finder/lib';
 
 export function getSchema(): string {
@@ -22,17 +22,21 @@ function toSqlHistory(history: HistoryMessage[]): ChatCompletionMessageParam[] {
   });
 }
 
-function toAnswerHistory(history: HistoryMessage[]): ChatCompletionMessageParam[] {
+function toAnswerHistory(
+  history: HistoryMessage[],
+): ChatCompletionMessageParam[] {
   // For answer formatting, include question and natural language answer
-  return history.map((msg): ChatCompletionMessageParam => ({
-    role: msg.role,
-    content: msg.content,
-  }));
+  return history.map(
+    (msg): ChatCompletionMessageParam => ({
+      role: msg.role,
+      content: msg.content,
+    }),
+  );
 }
 
 export async function* processQuery(
   question: string,
-  history: HistoryMessage[]
+  history: HistoryMessage[],
 ): AsyncGenerator<QueryEvent, void, unknown> {
   const schema = getSchemaText();
 
