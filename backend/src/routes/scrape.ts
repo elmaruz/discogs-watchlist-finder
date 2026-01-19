@@ -2,7 +2,7 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import * as v from 'valibot';
 import { runScrape } from '../scraper.js';
-import { validate } from '../utils/validation.js';
+import { parseBody } from '../utils/validation.js';
 import type { ScrapeEvent } from '@discogs-wantlist-finder/lib';
 
 const router = Router();
@@ -12,19 +12,11 @@ const ScrapeRequestSchema = v.object({
 });
 
 router.post('/', async (req: Request, res: Response) => {
-  let username: string;
+  const body = parseBody(ScrapeRequestSchema, req.body, res);
+  if (!body) return;
 
-  try {
-    const body = validate(ScrapeRequestSchema, req.body, 'Scrape request body');
-    username = body.username;
-  } catch (error) {
-    res.status(400).json({
-      error: error instanceof Error ? error.message : 'Invalid request',
-    });
-    return;
-  }
+  const { username } = body;
 
-  // Set up SSE headers
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');

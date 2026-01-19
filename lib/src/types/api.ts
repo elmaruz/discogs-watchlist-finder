@@ -2,9 +2,15 @@ export interface ScrapeRequest {
   username: string;
 }
 
+export interface HistoryMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  sql?: string;
+}
+
 export interface QueryRequest {
   question: string;
-  conversationId?: string;
+  history?: HistoryMessage[];
 }
 
 export interface QueryResponse {

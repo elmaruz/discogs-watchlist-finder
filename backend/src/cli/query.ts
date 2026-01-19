@@ -1,10 +1,7 @@
 import 'dotenv/config';
 import * as readline from 'readline';
-import {
-  createConversation,
-  processQuery,
-  getSchema,
-} from '../query/service.js';
+import { processQuery, getSchema } from '../query/service.js';
+import type { HistoryMessage } from '@discogs-wantlist-finder/lib';
 
 const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
@@ -13,7 +10,7 @@ async function main(): Promise<void> {
   console.log(`📝 Using: OpenAI ${MODEL}`);
   console.log("Type 'exit' to quit, 'schema' to view database schema\n");
 
-  const conversation = createConversation();
+  const history: HistoryMessage[] = [];
 
   const rl = readline.createInterface({
     input: process.stdin,
@@ -44,7 +41,10 @@ async function main(): Promise<void> {
       }
 
       try {
-        const generator = processQuery(question, conversation);
+        const generator = processQuery(question, history);
+
+        let currentAnswer = '';
+        let currentSql = '';
 
         for await (const event of generator) {
           switch (event.type) {
@@ -52,13 +52,21 @@ async function main(): Promise<void> {
               console.log('\n🔍 Thinking...\n');
               break;
             case 'sql':
-              // SQL generated, processing
+              currentSql = event.sql;
               break;
             case 'chunk':
               process.stdout.write(event.content);
+              currentAnswer += event.content;
               break;
             case 'done':
               console.log('\n');
+              // Add to history after successful response
+              history.push({ role: 'user', content: question });
+              history.push({
+                role: 'assistant',
+                content: currentAnswer,
+                sql: currentSql,
+              });
               break;
             case 'error':
               console.error(`\n❌ ${event.message}`);

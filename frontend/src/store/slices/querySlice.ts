@@ -12,7 +12,6 @@ export interface QueryState {
   isStreaming: boolean;
   currentStreamingText: string;
   currentSql: string;
-  conversationId: string | null;
 }
 
 const initialState: QueryState = {
@@ -20,7 +19,6 @@ const initialState: QueryState = {
   isStreaming: false,
   currentStreamingText: '',
   currentSql: '',
-  conversationId: null,
 };
 
 const querySlice = createSlice({
@@ -45,7 +43,7 @@ const querySlice = createSlice({
     streamingChunk(state, action: PayloadAction<string>) {
       state.currentStreamingText += action.payload;
     },
-    streamingCompleted(state, action: PayloadAction<string | undefined>) {
+    streamingCompleted(state) {
       state.messages.push({
         id: crypto.randomUUID(),
         role: 'assistant',
@@ -55,9 +53,6 @@ const querySlice = createSlice({
       state.isStreaming = false;
       state.currentStreamingText = '';
       state.currentSql = '';
-      if (action.payload) {
-        state.conversationId = action.payload;
-      }
     },
     streamingError(state, action: PayloadAction<string>) {
       state.messages.push({
@@ -71,7 +66,6 @@ const querySlice = createSlice({
     },
     clearMessages(state) {
       state.messages = [];
-      state.conversationId = null;
     },
   },
 });

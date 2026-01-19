@@ -2,69 +2,57 @@ import type { ChatCompletionMessageParam } from 'openai/resources/chat/completio
 import { getSchemaText, executeSQL } from './schemaBuilder.js';
 import { generateSQL } from './sqlGenerator.js';
 import { formatAnswerStream } from './answerFormatter.js';
-import type { QueryEvent } from '@discogs-wantlist-finder/lib';
-
-export interface ConversationState {
-  sqlHistory: ChatCompletionMessageParam[];
-  answerHistory: ChatCompletionMessageParam[];
-}
-
-export function createConversation(): ConversationState {
-  return {
-    sqlHistory: [],
-    answerHistory: [],
-  };
-}
+import type { QueryEvent, HistoryMessage } from '@discogs-wantlist-finder/lib';
 
 export function getSchema(): string {
   return getSchemaText();
 }
 
+function toSqlHistory(history: HistoryMessage[]): ChatCompletionMessageParam[] {
+  // For SQL generation, include question and SQL (not the natural language answer)
+  return history.flatMap((msg): ChatCompletionMessageParam[] => {
+    if (msg.role === 'user') {
+      return [{ role: 'user', content: msg.content }];
+    }
+    // For assistant messages, use SQL if available
+    if (msg.sql) {
+      return [{ role: 'assistant', content: msg.sql }];
+    }
+    return [];
+  });
+}
+
+function toAnswerHistory(history: HistoryMessage[]): ChatCompletionMessageParam[] {
+  // For answer formatting, include question and natural language answer
+  return history.map((msg): ChatCompletionMessageParam => ({
+    role: msg.role,
+    content: msg.content,
+  }));
+}
+
 export async function* processQuery(
   question: string,
-  conversation: ConversationState
+  history: HistoryMessage[]
 ): AsyncGenerator<QueryEvent, void, unknown> {
   const schema = getSchemaText();
 
+  // Keep only last 3 Q&A pairs (6 messages)
+  const recentHistory = history.slice(-6);
+
   yield { type: 'thinking' };
 
-  const sql = await generateSQL(question, schema, conversation.sqlHistory);
+  const sqlHistory = toSqlHistory(recentHistory);
+  const sql = await generateSQL(question, schema, sqlHistory);
 
   yield { type: 'sql', sql };
 
   const results = executeSQL(sql);
 
-  const generator = formatAnswerStream(
-    question,
-    sql,
-    results,
-    conversation.answerHistory
-  );
+  const answerHistory = toAnswerHistory(recentHistory);
+  const generator = formatAnswerStream(question, sql, results, answerHistory);
 
-  let fullAnswer = '';
   for await (const chunk of generator) {
-    fullAnswer += chunk;
     yield { type: 'chunk', content: chunk };
-  }
-
-  // Update SQL history
-  conversation.sqlHistory.push({ role: 'user', content: question });
-  const resultSummary =
-    results.length > 0
-      ? `${sql}\n-- Returned ${results.length} rows with columns: ${Object.keys(
-          results[0]
-        ).join(', ')}`
-      : sql;
-  conversation.sqlHistory.push({ role: 'assistant', content: resultSummary });
-  if (conversation.sqlHistory.length > 6) {
-    conversation.sqlHistory.splice(0, 2);
-  }
-
-  // Update answer history
-  conversation.answerHistory.push({ role: 'user', content: question });
-  conversation.answerHistory.push({ role: 'assistant', content: fullAnswer });
-  if (conversation.answerHistory.length > 6) {
-    conversation.answerHistory.splice(0, 2);
   }
 
   yield { type: 'done' };
