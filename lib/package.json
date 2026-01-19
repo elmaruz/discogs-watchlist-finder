@@ -18,6 +18,9 @@
     "build": "tsc",
     "dev": "tsc --watch"
   },
+  "dependencies": {
+    "valibot": "^1.2.0"
+  },
   "devDependencies": {
     "typescript": "^5.9.3"
   }

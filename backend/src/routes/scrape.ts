@@ -1,15 +1,10 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
-import * as v from 'valibot';
 import { runScrape } from '../scraper.js';
 import { parseBody } from '../utils/validation.js';
-import type { ScrapeEvent } from '@discogs-wantlist-finder/lib';
+import { ScrapeRequestSchema, type ScrapeEvent } from '@discogs-wantlist-finder/lib';
 
 const router = Router();
-
-const ScrapeRequestSchema = v.object({
-  username: v.pipe(v.string(), v.minLength(1)),
-});
 
 router.post('/', async (req: Request, res: Response) => {
   const body = parseBody(ScrapeRequestSchema, req.body, res);

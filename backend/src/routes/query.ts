@@ -1,22 +1,10 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
-import * as v from 'valibot';
 import { processQuery, getSchema } from '../query/service.js';
 import { parseBody } from '../utils/validation.js';
-import type { QueryEvent } from '@discogs-wantlist-finder/lib';
+import { QueryRequestSchema, type QueryEvent } from '@discogs-wantlist-finder/lib';
 
 const router = Router();
-
-const HistoryMessageSchema = v.object({
-  role: v.picklist(['user', 'assistant']),
-  content: v.string(),
-  sql: v.optional(v.string()),
-});
-
-const QueryRequestSchema = v.object({
-  question: v.pipe(v.string(), v.minLength(1)),
-  history: v.optional(v.array(HistoryMessageSchema), []),
-});
 
 router.get('/schema', (_req: Request, res: Response) => {
   res.json({ schema: getSchema() });

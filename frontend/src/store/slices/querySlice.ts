@@ -1,10 +1,8 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { HistoryMessage } from '@discogs-wantlist-finder/lib';
 
-export interface Message {
+export interface Message extends HistoryMessage {
   id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  sql?: string;
 }
 
 export interface QueryState {

@@ -10,7 +10,7 @@ import {
   clearMessages,
 } from '../../store/slices/querySlice';
 import StreamingMessage from './StreamingMessage';
-import type { QueryEvent, HistoryMessage } from '@discogs-wantlist-finder/lib';
+import type { QueryEvent } from '@discogs-wantlist-finder/lib';
 
 function ChatInterface() {
   const [input, setInput] = useState('');
@@ -34,16 +34,9 @@ function ChatInterface() {
     dispatch(addUserMessage(question));
     dispatch(streamingStarted());
 
-    // Convert messages to history format for the API
-    const history: HistoryMessage[] = messages.map((msg) => ({
-      role: msg.role,
-      content: msg.content,
-      sql: msg.sql,
-    }));
-
     startStream(
       '/api/query',
-      { question, history },
+      { question, history: messages },
       {
         onMessage: (event) => {
           switch (event.type) {
