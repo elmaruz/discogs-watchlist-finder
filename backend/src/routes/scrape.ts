@@ -2,7 +2,9 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { runScrape } from '../scraper.js';
 import { parseBody } from '../utils/validation.js';
-import { ScrapeRequestSchema, type ScrapeEvent } from '@discogs-wantlist-finder/lib';
+import { ScrapeRequestSchema } from '@discogs-wantlist-finder/lib';
+import { sendEvent, setStreamHeaders } from '../utils/middleware.js';
+import { handleApiError } from '../utils/errorHandler.js';
 
 const router = Router();
 
@@ -12,21 +14,14 @@ router.post('/', async (req: Request, res: Response) => {
 
   const { username } = body;
 
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-  res.flushHeaders();
-
-  const sendEvent = (event: ScrapeEvent) => {
-    res.write(`data: ${JSON.stringify(event)}\n\n`);
-  };
+  setStreamHeaders(res);
 
   try {
-    await runScrape(username, sendEvent);
+    await runScrape(username, sendEvent(res));
   } catch (error) {
-    sendEvent({
+    sendEvent(res)({
       type: 'error',
-      message: error instanceof Error ? error.message : String(error),
+      message: handleApiError(error, 'Scrape endpoint failed'),
     });
   } finally {
     res.end();

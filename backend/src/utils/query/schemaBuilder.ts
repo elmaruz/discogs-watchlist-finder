@@ -1,5 +1,5 @@
-import { getTables, getTableColumns, runSQL } from '../db/queries/index.js';
-import { type SqliteTable, type SqlRow } from '../types/database.js';
+import { getTables, getTableColumns, runSQL } from '../../db/queries/index.js';
+import { type SqliteTable, type SqlRow } from '../../types/database.js';
 
 function formatTables(tables: SqliteTable[]): string {
   const formatted = tables
@@ -39,7 +39,7 @@ function validateSqlQuery(sql: string) {
     !lower.startsWith('explain')
   ) {
     throw new Error(
-      `Only read-only queries allowed. Generated SQL: ${sql.substring(0, 100)}`
+      `Only read-only queries allowed. Generated SQL: ${sql.substring(0, 100)}`,
     );
   }
 }

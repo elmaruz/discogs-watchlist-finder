@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
-import type { SqlRow } from '../types/database.js';
+import type { SqlRow } from '../../types/database.js';
 
 const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 const openai = process.env.OPENAI_API_KEY
@@ -11,7 +11,7 @@ export async function* formatAnswerStream(
   question: string,
   sql: string,
   results: SqlRow[],
-  history: ChatCompletionMessageParam[]
+  history: ChatCompletionMessageParam[],
 ): AsyncGenerator<string, string, unknown> {
   const messages: ChatCompletionMessageParam[] = [
     {
@@ -38,7 +38,7 @@ Formatting rules:
       } rows):\n${JSON.stringify(
         results,
         null,
-        2
+        2,
       )}\n\nProvide a friendly answer.`,
     },
   ];
@@ -67,7 +67,7 @@ export async function formatAnswer(
   question: string,
   sql: string,
   results: SqlRow[],
-  history: ChatCompletionMessageParam[]
+  history: ChatCompletionMessageParam[],
 ): Promise<string> {
   let fullAnswer = '';
   const generator = formatAnswerStream(question, sql, results, history);
