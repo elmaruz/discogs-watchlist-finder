@@ -14,10 +14,12 @@ export const SqliteColumnInfoSchema = v.object({
   type: v.string(),
 });
 
-export const ReleaseIdSchema = v.object({
+export const WantlistReleaseSchema = v.object({
   release_id: v.number(),
+  title: v.string(),
+  artists: v.string(),
 });
 
 export type SqliteTable = v.InferOutput<typeof SqliteTableSchema>;
 export type SqliteColumnInfo = v.InferOutput<typeof SqliteColumnInfoSchema>;
-export type ReleaseId = v.InferOutput<typeof ReleaseIdSchema>;
+export type WantlistRelease = v.InferOutput<typeof WantlistReleaseSchema>;
