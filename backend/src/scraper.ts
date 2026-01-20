@@ -8,7 +8,7 @@ import type { ScrapeEvent } from '@discogs-wantlist-finder/lib';
 
 export async function runScrape(
   username: string,
-  onProgress: (event: ScrapeEvent) => void
+  onProgress: (event: ScrapeEvent) => void,
 ): Promise<void> {
   initSchema();
   clearSnapshot();
@@ -25,7 +25,7 @@ export async function runScrape(
 
   try {
     for (let i = 0; i < releases.length; i++) {
-      const { release_id } = releases[i];
+      const { release_id, title, artists } = releases[i];
 
       try {
         await fetchListingsForRelease(release_id);
@@ -34,7 +34,7 @@ export async function runScrape(
           type: 'progress',
           current: i + 1,
           total: totalReleases,
-          releaseTitle: `Release ${release_id}`,
+          releaseTitle: `${title} - ${JSON.parse(artists)} (${release_id})`,
         });
       } catch (error) {
         onProgress({
