@@ -9,7 +9,7 @@ import type { ScrapeEvent } from '@discogs-wantlist-finder/lib';
 
 export async function runScrape(
   username: string,
-  onProgress: (event: ScrapeEvent) => void
+  onProgress: (event: ScrapeEvent) => void,
 ): Promise<void> {
   initSchema();
   clearSnapshot();
@@ -35,7 +35,7 @@ export async function runScrape(
           type: 'progress',
           current: i + 1,
           total: totalReleases,
-          releaseTitle: `${title} - ${artists} (${release_id})`,
+          releaseTitle: `${title} - ${JSON.parse(artists)} (${release_id})`,
         });
       } catch (error) {
         onProgress({

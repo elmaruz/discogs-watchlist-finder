@@ -90,6 +90,10 @@ function ChatInterface() {
               <div className="rounded-lg bg-blue-600 p-4">
                 <p className="text-white">{message.content}</p>
               </div>
+            ) : message.isError ? (
+              <div className="rounded-lg border border-red-800 bg-red-900/20 p-4">
+                <p className="text-red-300">{message.content}</p>
+              </div>
             ) : (
               <div className="space-y-2">
                 {message.sql && (
