@@ -4,11 +4,12 @@ import { fetchWantlist } from './services/wantlist.js';
 import { fetchListingsForRelease } from './services/listings.js';
 import { getAllWantlistReleases } from './db/queries/index.js';
 import { initBrowser, closeBrowser } from './clients/browser.js';
+import { getErrorMessage } from './utils/errorHandler.js';
 import type { ScrapeEvent } from '@discogs-wantlist-finder/lib';
 
 export async function runScrape(
   username: string,
-  onProgress: (event: ScrapeEvent) => void,
+  onProgress: (event: ScrapeEvent) => void
 ): Promise<void> {
   initSchema();
   clearSnapshot();
@@ -34,12 +35,12 @@ export async function runScrape(
           type: 'progress',
           current: i + 1,
           total: totalReleases,
-          releaseTitle: `${title} - ${JSON.parse(artists)} (${release_id})`,
+          releaseTitle: `${title} - ${artists} (${release_id})`,
         });
       } catch (error) {
         onProgress({
           type: 'error',
-          message: error instanceof Error ? error.message : String(error),
+          message: getErrorMessage(error),
         });
       }
 

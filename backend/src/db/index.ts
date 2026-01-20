@@ -24,6 +24,7 @@ export function clearSnapshot(): void {
     DELETE FROM listings;
     DELETE FROM sellers;
     DELETE FROM wantlist;
+    DELETE FROM releases;
     DELETE FROM users;
   `);
   console.log('✔ Previous snapshot cleared');
