@@ -1,7 +1,7 @@
 export type ScrapeEvent =
   | { type: 'started'; totalReleases: number }
   | { type: 'progress'; current: number; total: number; releaseTitle: string }
-  | { type: 'error'; message: string }
+  | { type: 'error'; message: string; fatal?: boolean }
   | { type: 'completed' };
 
 export type QueryEvent =

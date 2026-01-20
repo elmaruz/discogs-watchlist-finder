@@ -32,7 +32,19 @@ export function useSSE<T>() {
         });
 
         if (!response.ok) {
-          throw new Error(`HTTP error: ${response.status}`);
+          const errorBody = await response.text();
+          let errorMessage = `HTTP error: ${response.status}`;
+          try {
+            const parsed = JSON.parse(errorBody);
+            if (parsed.error) {
+              errorMessage = parsed.error;
+            }
+          } catch {
+            if (errorBody) {
+              errorMessage = errorBody;
+            }
+          }
+          throw new Error(errorMessage);
         }
 
         const reader = response.body?.getReader();

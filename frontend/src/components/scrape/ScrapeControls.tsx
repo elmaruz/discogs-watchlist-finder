@@ -4,6 +4,7 @@ import {
   scrapeStarted,
   scrapeProgress,
   scrapeError,
+  scrapeFailed,
   scrapeCompleted,
   scrapeReset,
 } from '../../store/slices/scrapeSlice';
@@ -41,7 +42,11 @@ function ScrapeControls() {
               );
               break;
             case 'error':
-              dispatch(scrapeError(event.message));
+              if (event.fatal) {
+                dispatch(scrapeFailed(event.message));
+              } else {
+                dispatch(scrapeError(event.message));
+              }
               break;
             case 'completed':
               dispatch(scrapeCompleted());
@@ -49,7 +54,7 @@ function ScrapeControls() {
           }
         },
         onError: (error) => {
-          dispatch(scrapeError(error.message));
+          dispatch(scrapeFailed(error.message));
         },
       }
     );

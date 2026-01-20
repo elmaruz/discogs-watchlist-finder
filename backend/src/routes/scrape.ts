@@ -20,10 +20,10 @@ router.post('/', async (req: Request, res: Response) => {
     await runScrape(username, sendEvent(res));
   } catch (error) {
     const errorMessage = handleApiError(error, 'Scrape endpoint failed');
-    console.log('📤 Sending error event to client:', errorMessage);
     sendEvent(res)({
       type: 'error',
       message: errorMessage,
+      fatal: true,
     });
   } finally {
     res.end();
