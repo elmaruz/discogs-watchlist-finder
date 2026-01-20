@@ -1,5 +1,4 @@
 import { DiscogsShopApiResponseSchema } from '../types/discogs.js';
-import { handleApiError } from '../utils/errorHandler.js';
 import { insertSeller, insertListing } from '../db/queries/index.js';
 import { validate } from '../utils/validation.js';
 import { fetchWithBrowser } from '../clients/browser.js';
@@ -58,25 +57,27 @@ export async function fetchListingsForRelease(
         }
 
         break; // Success, exit retry loop
-      } catch (error: any) {
+      } catch (error) {
         retries++;
 
-        if (error.message?.includes('Cloudflare challenge not resolved')) {
-          if (retries < maxRetries) {
-            // Exponential backoff with random jitter (0.5-1s, 1-1.5s, 1.5-2s)
-            const baseDelay = 500 * retries;
-            const jitter = Math.random() * 500;
-            const delay = baseDelay + jitter;
+        const isCloudflareError =
+          error instanceof Error &&
+          error.message.includes('Cloudflare challenge not resolved');
 
-            console.log(`\n⚠️  Cloudflare challenge failed, retrying (${retries}/${maxRetries}) in ${Math.round(delay/1000)}s...`);
-            await new Promise((resolve) => setTimeout(resolve, delay));
-            continue;
-          }
+        if (isCloudflareError && retries < maxRetries) {
+          const baseDelay = 500 * retries;
+          const jitter = Math.random() * 500;
+          const delay = baseDelay + jitter;
+
+          console.log(
+            `\n⚠️  Cloudflare challenge failed, retrying (${retries}/${maxRetries}) in ${Math.round(delay / 1000)}s...`
+          );
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          continue;
         }
 
-        // If not Cloudflare error or max retries reached, handle normally
-        handleApiError(error, `Fetching listings for release ${releaseId}`);
-        return;
+        // Max retries reached or non-retryable error - propagate
+        throw error;
       }
     }
   } while (offset < totalCount);

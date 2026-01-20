@@ -4,6 +4,7 @@ import { fetchWantlist } from './services/wantlist.js';
 import { fetchListingsForRelease } from './services/listings.js';
 import { getAllWantlistReleases } from './db/queries/index.js';
 import { initBrowser, closeBrowser } from './clients/browser.js';
+import { getErrorMessage } from './utils/errorHandler.js';
 import type { ScrapeEvent } from '@discogs-wantlist-finder/lib';
 
 export async function runScrape(
@@ -39,7 +40,7 @@ export async function runScrape(
       } catch (error) {
         onProgress({
           type: 'error',
-          message: error instanceof Error ? error.message : String(error),
+          message: getErrorMessage(error),
         });
       }
 

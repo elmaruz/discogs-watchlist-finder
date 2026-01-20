@@ -3,6 +3,7 @@ import type { HistoryMessage } from '@discogs-wantlist-finder/lib';
 
 export interface Message extends HistoryMessage {
   id: string;
+  isError?: boolean;
 }
 
 export interface QueryState {
@@ -56,7 +57,8 @@ const querySlice = createSlice({
       state.messages.push({
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: `Error: ${action.payload}`,
+        content: action.payload,
+        isError: true,
       });
       state.isStreaming = false;
       state.currentStreamingText = '';

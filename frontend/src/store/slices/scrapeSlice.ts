@@ -37,6 +37,11 @@ const scrapeSlice = createSlice({
     scrapeError(state, action: PayloadAction<string>) {
       state.errors.push(action.payload);
     },
+    scrapeFailed(state, action: PayloadAction<string>) {
+      state.status = 'error';
+      state.errors.push(action.payload);
+      state.currentRelease = '';
+    },
     scrapeCompleted(state) {
       state.status = 'completed';
       state.currentRelease = '';
@@ -54,6 +59,7 @@ export const {
   scrapeStarted,
   scrapeProgress,
   scrapeError,
+  scrapeFailed,
   scrapeCompleted,
   scrapeReset,
 } = scrapeSlice.actions;
