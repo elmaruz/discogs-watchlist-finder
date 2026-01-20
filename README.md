@@ -1,6 +1,6 @@
 # Discogs Wantlist Finder
 
-A TypeScript CLI tool that creates a **queryable SQLite snapshot** of Discogs marketplace listings matching your personal wantlist, with **AI-powered natural language querying**.
+A full-stack web application that creates a **queryable SQLite snapshot** of Discogs marketplace listings matching your personal wantlist, with **AI-powered natural language querying**.
 
 Ask questions like:
 - _"Which sellers have the most items from my wantlist?"_
@@ -11,11 +11,25 @@ Ask questions like:
 
 ## Features
 
+- **Web UI** for scraping and querying (React + Tailwind)
+- **Real-time streaming** progress and AI responses (SSE)
 - Fetches your Discogs **wantlist** via the official API
-- Creates a local **SQLite database** snapshot (users, sellers, listings, releases)
+- Creates a local **SQLite database** snapshot
 - **Natural language SQL querying** powered by OpenAI
 - Read-only, secure queries (no data modification)
-- No database server required
+
+---
+
+## Project Structure
+
+```
+discogs-wantlist-finder/
+├── frontend/          # React + Vite + Tailwind + Redux
+├── backend/           # Express API + business logic
+├── lib/               # Shared types and schemas
+├── snapshots/         # SQLite database (gitignored)
+└── package.json       # Workspace root
+```
 
 ---
 
@@ -29,7 +43,7 @@ npm install
 
 ### 2. Configure Environment Variables
 
-Create a `.env` file:
+Create `backend/.env`:
 
 ```bash
 # Required: Discogs credentials
@@ -47,51 +61,53 @@ OPENAI_MODEL=gpt-4o-mini
 - Discogs token: [discogs.com/settings/developers](https://www.discogs.com/settings/developers)
 - OpenAI API key: [platform.openai.com](https://platform.openai.com)
 
-**Cost:** ~$0.0001 per query (10,000 queries ≈ $1)
-
 ---
 
 ## Usage
 
-### Option 1: Query existing snapshot
+### Web Application
+
 ```bash
-npm run query
+# Run both frontend and backend
+npm run dev
+
+# Or run separately
+npm run dev:backend   # Express API on port 3001
+npm run dev:frontend  # Vite dev server on port 5173
 ```
 
-### Option 2: Scrape then query
-```bash
-npm start -- --query
-```
+Open http://localhost:5173 in your browser.
 
-### Option 3: Just scrape (default)
-```bash
-npm start
-```
+### CLI (Alternative)
 
-**In query mode:**
-- Type natural language questions
-- Type `schema` to view database structure
-- Type `exit` to quit
+```bash
+# Scrape wantlist
+npm run scrape -w backend
+
+# Query existing snapshot
+npm run query -w backend
+```
 
 ---
 
-## How Query Mode Works
+## API Endpoints
 
-1. Your question is sent to OpenAI's GPT model
-2. AI generates a SQL query based on your database schema
-3. Query is executed locally (read-only)
-4. Results are formatted as a natural language answer
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/scrape` | Start scraping (SSE stream) |
+| POST | `/api/query` | Natural language query (SSE stream) |
+| GET | `/api/query/schema` | Get database schema |
+| GET | `/api/health` | Health check |
+
+---
+
+## How It Works
+
+1. **Scrape**: Fetches your Discogs wantlist and marketplace listings
+2. **Store**: Saves data to local SQLite (users, sellers, listings, releases)
+3. **Query**: Your question → OpenAI generates SQL → executes locally → streams answer
 
 **Safety:**
 - Only SELECT, WITH, and EXPLAIN queries allowed
-- No data modification possible (INSERT/UPDATE/DELETE blocked)
+- No data modification possible
 - Queries run on your local snapshot only
-- Only schema and query results sent to OpenAI (not raw data)
-
----
-
-## Future Goals
-
-- Front-end for seller comparison and bundle optimization
-- More advanced analytics (pricing, condition filters)
-- Improved scraping robustness and metadata
