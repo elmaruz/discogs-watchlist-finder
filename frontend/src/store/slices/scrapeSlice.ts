@@ -52,6 +52,12 @@ const scrapeSlice = createSlice({
       state.currentRelease = '';
       state.errors = [];
     },
+    useExistingSnapshot(state, action: PayloadAction<{ releaseCount: number; listingCount: number }>) {
+      state.status = 'completed';
+      state.progress = { current: action.payload.releaseCount, total: action.payload.releaseCount };
+      state.currentRelease = '';
+      state.errors = [];
+    },
   },
 });
 
@@ -62,6 +68,7 @@ export const {
   scrapeFailed,
   scrapeCompleted,
   scrapeReset,
+  useExistingSnapshot,
 } = scrapeSlice.actions;
 
 export default scrapeSlice.reducer;

@@ -33,3 +33,15 @@ export interface ErrorResponse {
   error: string;
   details?: string;
 }
+
+// Snapshot API
+export const SnapshotInfoSchema = v.object({
+  username: v.string(),
+  releaseCount: v.number(),
+  listingCount: v.number(),
+});
+
+export const NullableSnapshotInfoSchema = v.nullable(SnapshotInfoSchema);
+
+export type SnapshotInfo = v.InferOutput<typeof SnapshotInfoSchema>;
+export type NullableSnapshotInfo = v.InferOutput<typeof NullableSnapshotInfoSchema>;
