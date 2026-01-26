@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector, useSSE } from '../../hooks';
 import {
   scrapeStarted,
@@ -7,16 +7,34 @@ import {
   scrapeFailed,
   scrapeCompleted,
   scrapeReset,
+  useExistingSnapshot,
 } from '../../store/slices/scrapeSlice';
-import type { ScrapeEvent } from '@discogs-wantlist-finder/lib';
+import type { ScrapeEvent, NullableSnapshotInfo } from '@discogs-wantlist-finder/lib';
 
 function ScrapeControls() {
   const [username, setUsername] = useState('');
+  const [snapshotInfo, setSnapshotInfo] = useState<NullableSnapshotInfo>(null);
   const dispatch = useAppDispatch();
   const { status, progress, currentRelease, errors } = useAppSelector(
     (state) => state.scrape
   );
   const { startStream, stopStream } = useSSE<ScrapeEvent>();
+
+  useEffect(() => {
+    fetch('/api/snapshot')
+      .then((res) => res.json())
+      .then((info: NullableSnapshotInfo) => setSnapshotInfo(info))
+      .catch(() => setSnapshotInfo(null));
+  }, []);
+
+  const handleUseExisting = () => {
+    if (snapshotInfo) {
+      dispatch(useExistingSnapshot({
+        releaseCount: snapshotInfo.releaseCount,
+        listingCount: snapshotInfo.listingCount,
+      }));
+    }
+  };
 
   const handleStart = () => {
     if (!username.trim()) return;
@@ -98,6 +116,21 @@ function ScrapeControls() {
           </button>
         )}
       </div>
+
+      {status === 'idle' && snapshotInfo && (
+        <div className="rounded-md border border-gray-700 bg-gray-800/50 p-4">
+          <p className="text-sm text-gray-300">
+            Existing snapshot found for <span className="font-medium text-white">{snapshotInfo.username}</span>
+            {' '}with {snapshotInfo.releaseCount} releases and {snapshotInfo.listingCount} listings.
+          </p>
+          <button
+            onClick={handleUseExisting}
+            className="mt-3 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+          >
+            Use Existing Snapshot
+          </button>
+        </div>
+      )}
 
       {status !== 'idle' && (
         <div className="space-y-3">

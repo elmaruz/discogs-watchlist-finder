@@ -4,6 +4,7 @@ import cors from 'cors';
 import { initSchema } from './db/index.js';
 import scrapeRouter from './routes/scrape.js';
 import queryRouter from './routes/query.js';
+import snapshotRouter from './routes/snapshot.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -18,6 +19,7 @@ app.use(express.json());
 // Routes
 app.use('/api/scrape', scrapeRouter);
 app.use('/api/query', queryRouter);
+app.use('/api/snapshot', snapshotRouter);
 
 // Health check
 app.get('/api/health', (_req, res) => {
