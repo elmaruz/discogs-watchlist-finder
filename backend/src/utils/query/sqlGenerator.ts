@@ -25,7 +25,17 @@ Domain context - Discogs music marketplace terminology:
 - "labels" → record labels (labels column), NOT database labels
 - "price" → use both price and currency columns
 
-Schema:\n${schema}\n\nExamples:\nQ: "Show me all releases"\nA: SELECT r.title, r.artists, r.labels, r.year FROM releases r JOIN wantlist w ON r.release_id = w.release_id;\n\nQ: "Which sellers have most listings?"\nA: SELECT s.username, COUNT(*) as listing_count FROM sellers s JOIN listings l ON s.seller_id = l.seller_id GROUP BY s.seller_id, s.username ORDER BY listing_count DESC LIMIT 10;\n\nQ: "Show unique releases with cheapest price"\nA: SELECT r.title, MIN(l.price) as price, l.currency FROM releases r JOIN wantlist w ON r.release_id = w.release_id JOIN listings l ON r.release_id = l.release_id GROUP BY r.release_id, r.title, l.currency ORDER BY price ASC;\n\nImportant rules:
+Smart matching rules:
+- Country/region aliases: Expand abbreviations to full names in queries
+  - "UK" → "United Kingdom", "US"/"USA" → "United States", "EU" → European countries
+  - "DE" → "Germany", "FR" → "France", "JP" → "Japan", "NL" → "Netherlands"
+- Text searches: Use LIKE with wildcards (%) for flexible matching
+  - For titles, artists, labels: Use LIKE '%term%' to find partial matches
+  - Use LOWER() for case-insensitive matching: WHERE LOWER(column) LIKE LOWER('%term%')
+- When users search for specific titles/artists, prefer approximate matching over exact equality
+  - Example: searching "kind of blue" should use LIKE '%kind of blue%' not = 'kind of blue'
+
+Schema:\n${schema}\n\nExamples:\nQ: "Show me all releases"\nA: SELECT r.title, r.artists, r.labels, r.year FROM releases r JOIN wantlist w ON r.release_id = w.release_id;\n\nQ: "Which sellers have most listings?"\nA: SELECT s.username, COUNT(*) as listing_count FROM sellers s JOIN listings l ON s.seller_id = l.seller_id GROUP BY s.seller_id, s.username ORDER BY listing_count DESC LIMIT 10;\n\nQ: "Show unique releases with cheapest price"\nA: SELECT r.title, MIN(l.price) as price, l.currency FROM releases r JOIN wantlist w ON r.release_id = w.release_id JOIN listings l ON r.release_id = l.release_id GROUP BY r.release_id, r.title, l.currency ORDER BY price ASC;\n\nQ: "Sellers shipping from the UK"\nA: SELECT DISTINCT s.username, s.ships_from FROM sellers s JOIN listings l ON s.seller_id = l.seller_id WHERE LOWER(s.ships_from) LIKE '%united kingdom%';\n\nQ: "Find releases with 'blue' in the title"\nA: SELECT r.title, r.artists, r.year FROM releases r JOIN wantlist w ON r.release_id = w.release_id WHERE LOWER(r.title) LIKE '%blue%';\n\nImportant rules:
 - This is a SQLite database - use SQLite syntax and functions (NOT PostgreSQL, MySQL, etc.)
 - DO use IDs effectively in WHERE/JOIN/GROUP BY/DISTINCT for accuracy (e.g., COUNT(DISTINCT release_id), GROUP BY seller_id)
 - NEVER include ID columns in final SELECT output - only human-readable names
