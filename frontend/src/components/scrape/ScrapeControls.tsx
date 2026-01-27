@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector, useSSE } from '../../hooks';
 import {
+  scrapeLoading,
   scrapeStarted,
   scrapeProgress,
   scrapeError,
@@ -39,7 +40,7 @@ function ScrapeControls() {
   const handleStart = () => {
     if (!username.trim()) return;
 
-    dispatch(scrapeReset());
+    dispatch(scrapeLoading());
 
     startStream(
       '/api/scrape',
@@ -96,10 +97,10 @@ function ScrapeControls() {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           placeholder="Discogs username"
-          disabled={status === 'running'}
+          disabled={status === 'loading' || status === 'running'}
           className="flex-1 rounded-md border border-gray-600 bg-gray-800 px-4 py-2 text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
         />
-        {status === 'running' ? (
+        {status === 'loading' || status === 'running' ? (
           <button
             onClick={handleStop}
             className="rounded-md bg-red-600 px-6 py-2 font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-900"
@@ -136,6 +137,7 @@ function ScrapeControls() {
         <div className="space-y-3">
           <div className="flex justify-between text-sm text-gray-400">
             <span>
+              {status === 'loading' && 'Loading...'}
               {status === 'running' && 'Scraping...'}
               {status === 'completed' && 'Completed!'}
               {status === 'error' && 'Error occurred'}

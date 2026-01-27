@@ -1,7 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 export interface ScrapeState {
-  status: 'idle' | 'running' | 'completed' | 'error';
+  status: 'idle' | 'loading' | 'running' | 'completed' | 'error';
   progress: { current: number; total: number };
   currentRelease: string;
   errors: string[];
@@ -18,6 +18,12 @@ const scrapeSlice = createSlice({
   name: 'scrape',
   initialState,
   reducers: {
+    scrapeLoading(state) {
+      state.status = 'loading';
+      state.progress = { current: 0, total: 0 };
+      state.currentRelease = '';
+      state.errors = [];
+    },
     scrapeStarted(state, action: PayloadAction<number>) {
       state.status = 'running';
       state.progress = { current: 0, total: action.payload };
@@ -62,6 +68,7 @@ const scrapeSlice = createSlice({
 });
 
 export const {
+  scrapeLoading,
   scrapeStarted,
   scrapeProgress,
   scrapeError,
