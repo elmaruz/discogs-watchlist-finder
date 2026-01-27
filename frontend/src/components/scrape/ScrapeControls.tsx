@@ -167,18 +167,18 @@ function ScrapeControls() {
           </div>
 
           {currentRelease && (
-            <div className="flex items-center gap-3">
-              <div className="h-16 w-16 flex-shrink-0 rounded bg-gray-700">
+            <div className="flex flex-col items-center gap-3 py-4">
+              <div className="h-32 w-32 flex-shrink-0 rounded bg-gray-700">
                 {currentThumbnail && (
                   <img
                     src={currentThumbnail}
                     alt=""
-                    className="h-16 w-16 rounded object-cover"
+                    className="h-32 w-32 rounded object-cover"
                   />
                 )}
               </div>
-              <p className="text-sm text-gray-400 truncate flex-1">
-                Current: {currentRelease}
+              <p className="text-sm text-gray-400 text-center max-w-md">
+                {currentRelease}
               </p>
             </div>
           )}
