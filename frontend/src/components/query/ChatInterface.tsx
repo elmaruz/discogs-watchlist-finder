@@ -10,6 +10,7 @@ import {
   clearMessages,
 } from '../../store/slices/querySlice';
 import StreamingMessage from './StreamingMessage';
+import Markdown from './Markdown';
 import type { QueryEvent } from '@discogs-wantlist-finder/lib';
 
 function ChatInterface() {
@@ -106,10 +107,8 @@ function ChatInterface() {
                     </pre>
                   </details>
                 )}
-                <div className="rounded-lg bg-gray-800 p-4">
-                  <p className="whitespace-pre-wrap text-gray-100">
-                    {message.content}
-                  </p>
+                <div className="rounded-lg bg-gray-800 p-4 text-gray-100">
+                  <Markdown content={message.content} />
                 </div>
               </div>
             )}
