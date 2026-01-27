@@ -25,6 +25,7 @@ export const DiscogsReleaseBasicSchema = v.object({
   id: v.number(),
   title: v.string(),
   year: v.nullable(v.number()),
+  thumb: v.optional(v.string()),
   artists: v.nullable(v.array(DiscogsArtistSchema)),
   labels: v.nullable(v.array(DiscogsLabelSchema)),
 });

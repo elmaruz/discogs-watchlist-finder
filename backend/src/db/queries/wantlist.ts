@@ -19,10 +19,11 @@ export function getAllWantlistReleases(): WantlistRelease[] {
   const results = db
     .prepare(
       `
-    SELECT 
+    SELECT
       w.release_id
     , r.title
     , r.artists
+    , r.thumb
     FROM wantlist w
     JOIN releases r
     ON w.release_id = r.release_id

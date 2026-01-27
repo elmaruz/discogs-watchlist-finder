@@ -21,12 +21,13 @@ export function initSchema(): void {
 export function clearSnapshot(): void {
   console.log('🗑️  Clearing previous snapshot...');
   db.exec(`
-    DELETE FROM listings;
-    DELETE FROM sellers;
-    DELETE FROM wantlist;
-    DELETE FROM releases;
-    DELETE FROM users;
+    DROP TABLE IF EXISTS listings;
+    DROP TABLE IF EXISTS sellers;
+    DROP TABLE IF EXISTS wantlist;
+    DROP TABLE IF EXISTS releases;
+    DROP TABLE IF EXISTS users;
   `);
+  initSchema();
   console.log('✔ Previous snapshot cleared');
 }
 

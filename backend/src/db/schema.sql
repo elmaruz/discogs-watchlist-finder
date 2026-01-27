@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS releases (
     artists TEXT[],
     labels TEXT[],
     catno TEXT[],
-    year INTEGER
+    year INTEGER,
+    thumb TEXT
 );
 
 CREATE TABLE IF NOT EXISTS wantlist (

@@ -7,13 +7,14 @@ export function insertRelease(
   artists: string,
   labels: string,
   catno: string,
-  year: Nullable<number>
+  year: Nullable<number>,
+  thumb: Nullable<string>
 ): void {
   db.prepare(
     `
     INSERT OR IGNORE INTO releases
-    (release_id, title, artists, labels, catno, year)
-    VALUES (?, ?, ?, ?, ?, ?)
+    (release_id, title, artists, labels, catno, year, thumb)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `
-  ).run(releaseId, title, artists, labels, catno, year);
+  ).run(releaseId, title, artists, labels, catno, year, thumb);
 }

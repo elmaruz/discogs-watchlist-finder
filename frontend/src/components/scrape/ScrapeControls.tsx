@@ -16,7 +16,7 @@ function ScrapeControls() {
   const [username, setUsername] = useState('');
   const [snapshotInfo, setSnapshotInfo] = useState<NullableSnapshotInfo>(null);
   const dispatch = useAppDispatch();
-  const { status, progress, currentRelease, errors } = useAppSelector(
+  const { status, progress, currentRelease, currentThumbnail, errors } = useAppSelector(
     (state) => state.scrape
   );
   const { startStream, stopStream } = useSSE<ScrapeEvent>();
@@ -52,11 +52,17 @@ function ScrapeControls() {
               dispatch(scrapeStarted(event.totalReleases));
               break;
             case 'progress':
+              // Preload next thumbnail so it's ready when needed
+              if (event.nextThumbnail) {
+                const img = new Image();
+                img.src = event.nextThumbnail;
+              }
               dispatch(
                 scrapeProgress({
                   current: event.current,
                   total: event.total,
                   releaseTitle: event.releaseTitle,
+                  thumbnail: event.thumbnail,
                 })
               );
               break;
@@ -161,9 +167,20 @@ function ScrapeControls() {
           </div>
 
           {currentRelease && (
-            <p className="text-sm text-gray-400 truncate">
-              Current: {currentRelease}
-            </p>
+            <div className="flex flex-col items-center gap-3 py-4">
+              <div className="h-32 w-32 flex-shrink-0 rounded bg-gray-700">
+                {currentThumbnail && (
+                  <img
+                    src={currentThumbnail}
+                    alt=""
+                    className="h-32 w-32 rounded object-cover"
+                  />
+                )}
+              </div>
+              <p className="text-sm text-gray-400 text-center max-w-md">
+                {currentRelease}
+              </p>
+            </div>
           )}
 
           {errors.length > 0 && (

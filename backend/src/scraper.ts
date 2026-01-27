@@ -26,7 +26,8 @@ export async function runScrape(
 
   try {
     for (let i = 0; i < releases.length; i++) {
-      const { release_id, title, artists } = releases[i];
+      const { release_id, title, artists, thumb } = releases[i];
+      const nextThumb = releases[i + 1]?.thumb ?? null;
 
       try {
         await fetchListingsForRelease(release_id);
@@ -36,6 +37,8 @@ export async function runScrape(
           current: i + 1,
           total: totalReleases,
           releaseTitle: `${title} - ${JSON.parse(artists)} (${release_id})`,
+          thumbnail: thumb,
+          nextThumbnail: nextThumb,
         });
       } catch (error) {
         onProgress({
