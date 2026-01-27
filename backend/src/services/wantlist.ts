@@ -31,7 +31,8 @@ export async function fetchWantlist(
         JSON.stringify(release.artists?.map((artist) => artist.name)),
         JSON.stringify(release.labels?.map((label) => label.name)),
         JSON.stringify(release.labels?.map((label) => label.catno)),
-        release.year ?? null
+        release.year ?? null,
+        release.thumb ?? null
       );
 
       insertWantlistItem(userId, release.id);

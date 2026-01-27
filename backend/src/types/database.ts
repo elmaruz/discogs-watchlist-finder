@@ -18,6 +18,7 @@ export const WantlistReleaseSchema = v.object({
   release_id: v.number(),
   title: v.string(),
   artists: v.string(),
+  thumb: v.nullable(v.string()),
 });
 
 export type SqliteTable = v.InferOutput<typeof SqliteTableSchema>;
